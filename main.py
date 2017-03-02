@@ -1,4 +1,5 @@
 import cx_Oracle
+import pdb #debugger library
 from functions import *
 con = cx_Oracle.connect("crapo","3sidedpolygon","gwynne.cs.ualberta.ca:1521/CRS")
 cur = con.cursor()
@@ -38,7 +39,5 @@ while state != EXIT:
 
     elif state == REGISTER:
         if register(cur) == 1:
-            if login(cur) == 1:
-                functions(cur)
-                #return
+            state = LOGIN
 

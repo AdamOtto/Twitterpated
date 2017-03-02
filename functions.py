@@ -1,3 +1,5 @@
+import pdb
+
 def getValidInput(valids, prompt = '', tries = float('inf')):
     """
     Will attempt to grab input from the user and check if it belongs to the
@@ -26,8 +28,11 @@ def login(cur):
     userID = input("Please enter your user ID: ")
     pswd = input("Please enter your password: ")
 
-    cur.execute("select name from users where usr = userID and pwd = pswd")
-
+    cur.execute("select * from users")
+    print(*cur)
+    print('user: ' + userID + " is using password: " + pswd)
+    cur.execute("select name from users where usr = :userID and pwd = :pswd", (userID, pswd))
+    print(*cur)
     name = cur.fetchall()
     if name:
         print("Welcome to Twitterpated ", name, "!")
@@ -41,7 +46,7 @@ def register(cur):
     email = input("Enter your email: ")
     city = input("Enter the city you live in: ")
     timezone = input("Enter your timezone: ")
-    float(timezone)
+    #timezone = float(timezone)
     pswd = input("Enter your password: ")
     # @TODO need to add error checking to all of these to make sure correct information is entered
     #  and maybe a better prompt to specify conditions; maybe use the getValidInput function?
@@ -50,10 +55,11 @@ def register(cur):
     user = cur.fetchall()
     user = int(user[0][0])
     user = user + 1
-    #print("insert into users (usr,pswd,name,email,city,timezone) values ("+ str(user) + "," + pswd + "," + name +"," + email + "," + city + "," + timezone +")")
-    #@TODO for some reason this insert statement isn't working
-    cur.execute("insert into users (usr,pswd,name,email,city,timezone) values ("+ str(user) + "," + pswd + "," + name +"," + email + "," + city + "," + timezone +")")
-    print(name, " your user ID is ", usr, ", don't forget this as it is used to login.")
+    #pdb.set_trace()
+    #print("insert into users (usr,pwd,name,email,city,timezone) values (\'"+ str(user) + "\',\'" + pswd + "\',\'" + name +"\',\'" + email + "\',\'" + city + "\',\'" + timezone +"\')")
+    cur.execute("insert into users values (:u, :p, :n, :e, :c, :tz)",(user, pswd, name, email, city, timezone))
+    print("successfully registered")
+    print("Welcome ", name, ", your user ID is ", user, ", don't forget this as it is used to login.")
     print("Thank you for registering with Twitterpated!")
     return 1
 
