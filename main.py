@@ -39,5 +39,6 @@ while state != EXIT:
 
     elif state == REGISTER:
         if register(cur) == 1:
+            con.commit()
             state = LOGIN
 

@@ -28,12 +28,16 @@ def login(cur):
     userID = input("Please enter your user ID: ")
     pswd = input("Please enter your password: ")
 
-    cur.execute("select * from users")
-    print(*cur)
-    print('user: ' + userID + " is using password: " + pswd)
-    cur.execute("select name from users where usr = :userID and pwd = :pswd", (userID, pswd))
-    print(*cur)
+    #cur.execute("select * from users")
+    #print(*cur.fetchall())
+    #print('user: ' + userID + " is using password: " + pswd)
+    #cur.execute("insert into users (usr, pwd) values(:1,:2)", (userID, str(pswd)))
+    #cur.execute("select name from users where usr = :1 and pwd = :2", (userID, str(pswd)))
+    inputarr = [int(userID), pswd + ' '] #@TODO this is TOTALLY broken, in order to match a string to a char column, you must pad them to the same width.... can we strip leading and trailing spaces?
+    cur.execute("select name from users where usr = :1 and pwd = :2", inputarr)
+    #print(*cur)
     name = cur.fetchall()
+    print(name)
     if name:
         print("Welcome to Twitterpated ", name, "!")
         return 1
