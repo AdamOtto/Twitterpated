@@ -28,20 +28,15 @@ def login(cur):
     userID = input("Please enter your user ID: ")
     pswd = input("Please enter your password: ")
 
-    #cur.execute("select * from users")
-    #print(*cur.fetchall())
-    #print('user: ' + userID + " is using password: " + pswd)
-    #cur.execute("insert into users (usr, pwd) values(:1,:2)", (userID, str(pswd)))
-    #cur.execute("select name from users where usr = :1 and pwd = :2", (userID, str(pswd)))
-    inputarr = [int(userID), pswd + ' '] #@TODO this is TOTALLY broken, in order to match a string to a char column, you must pad them to the same width.... can we strip leading and trailing spaces?
+    inputarr = [int(userID), pswd.ljust(4)] #password must be padded or it will not match
     cur.execute("select name from users where usr = :1 and pwd = :2", inputarr)
-    #print(*cur)
-    name = cur.fetchall()
-    print(name)
+
+    name = cur.fetchall()[0][0]
     if name:
-        print("Welcome to Twitterpated ", name, "!")
+        print("Successfully logged in as: ", name, "!")
         return 1
     else:
+        print("Incorrect username or password, please try again.")
         return 0
 
 # if register is specified prompts the user for all the information to create a user in the table
@@ -69,7 +64,7 @@ def register(cur):
 
 
 # Provides a menu for the functions of the program
-def functions():
+def functions(cur):
     print("Welcome to Twitterpated! The functions of Twitterpated are listed below.")
 
     print("1 - Search for Tweets\n2 - Search for Users\n3 - Write a "
@@ -78,15 +73,15 @@ def functions():
 
     while f_input:
         if f_input == "1":
-            search_tweet()
+            search_tweet(cur)
         elif f_input == "2":
-            search_user()
+            search_user(cur)
         elif f_input == "3":
-            write_tweet()
+            write_tweet(cur)
         elif f_input == "4":
-            list_followers()
+            list_followers(cur)
         elif f_input == "5":
-            manage_lists()
+            manage_lists(cur)
         elif f_input == "6":
             print("Logging out of Twitterpated.")
             return 1
@@ -110,34 +105,34 @@ def search_tweet(cur):
     keyword.split(',')
     for word in keyword:
         word.strip()
-        cur.execute("select text from "
-                    "(select text, row_number(order by tdate descending) as row_num "
-                    "from tweets where text like '%word%') where row_num <= 5")
+        cur.execute("select text from " + 
+                    "(select text, row_number() over (order by tdate desc) as row_num " + 
+                    "from tweets where text like '%:word%') where row_num <= 5", (word)) #@TODO does this correctly execute the %% modifiers? Or is it considering the variable name as "word%"?
         tweets = cur.fetchall()
         index = 1
         for tweet in tweets:
             print(index, " ", tweet)
             index += 1
         if index > 5:
-            more_tweets = input("Would you like to receive the next 5 tweets "
-                                "with the matching keyword from before? Enter "
+            more_tweets = input("Would you like to receive the next 5 tweets " + 
+                                "with the matching keyword from before? Enter " + 
                                 "yes or no: ")
             while (more_tweets == 'yes'):
-                cur.execute("select text from "
-                            "(select text, row_number(order by tdate descending) as row_num "
-                            "from tweets where text like '%word%') where row_num <= 5")
+                cur.execute("select text from " + 
+                            "(select text, row_number(order by tdate descending) as row_num " + 
+                            "from tweets where text like '%:word%') where row_num <= 5", (word))
                 #not finished
 
     return
 
-def search_user():
+def search_user(cur):
     return
 
-def write_tweet():
+def write_tweet(cur):
     return
 
-def list_followers():
+def list_followers(cur):
     return
 
-def manage_lists():
+def manage_lists(cur):
     return

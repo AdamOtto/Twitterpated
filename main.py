@@ -34,7 +34,7 @@ while state != EXIT:
         while login_status != 1:
             login_status = login(cur)
         if login_status == 1:
-            functions()
+            functions(cur)
             #return
 
     elif state == REGISTER:
