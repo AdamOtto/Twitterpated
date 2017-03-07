@@ -1,0 +1,29 @@
+/*
+Needed queries for the project
+*/
+1.
+- Given a keyword, return all tweets that mention the keyword in their text or in their list of hashtags
+- given a tweet id, return the number of retweets and number of replies
+- given a tweet id, user id and a text input, insert a reply tweet into tweets
+- gicen a tweet id and a user id, insert a retweet of the tweet id by user id in retweets.
+2.
+- given a keyword, return all users whose names or cities contain the keyword, sorted by name then by city, shortest to longest
+- given a user id, return the number of tweets they have
+- given a user id, return the number of users they follow
+- given a user id, return the number of users following them
+- given a user id, return their tweets by most recent
+3.
+- given a user id and text, insert a tweet with the id and text
+- given a tid and a hashtag, store an entry into the mentions table
+- given a tid and a hashtag, store an entry into the hashtags table
+4.
+- given a user id, return all followers of the user
+- given a user id 'follower' and user id 'followee', insert an entry into the follows table
+- the same queries for user stats as in 2
+5.
+- given a user id, return all lists made by the user
+- given a user id, return all lists that contain the user id
+- given a user id and a list name, insert a new list into the lists table
+- given a list name, return all users of that list
+- given a list name and a user id, remove that user from the list
+

@@ -34,10 +34,10 @@ def login(cur):
     name = cur.fetchall()[0][0]
     if name:
         print("Successfully logged in as: ", name, "!")
-        return 1
+        return (1, int(userID), name) 
     else:
         print("Incorrect username or password, please try again.")
-        return 0
+        return (0, None, None)
 
 # if register is specified prompts the user for all the information to create a user in the table
 def register(cur):
@@ -60,38 +60,6 @@ def register(cur):
     print("successfully registered")
     print("Welcome ", name, ", your user ID is ", user, ", don't forget this as it is used to login.")
     print("Thank you for registering with Twitterpated!")
-    return 1
-
-
-# Provides a menu for the functions of the program
-def functions(cur):
-    print("Welcome to Twitterpated! The functions of Twitterpated are listed below.")
-
-    print("1 - Search for Tweets\n2 - Search for Users\n3 - Write a "
-          "Tweet\n 4 - List Followers\n5 - Manage Lists\n6 - Logout")
-    f_input = input("What would you like to do? ")
-
-    while f_input:
-        if f_input == "1":
-            search_tweet(cur)
-        elif f_input == "2":
-            search_user(cur)
-        elif f_input == "3":
-            write_tweet(cur)
-        elif f_input == "4":
-            list_followers(cur)
-        elif f_input == "5":
-            manage_lists(cur)
-        elif f_input == "6":
-            print("Logging out of Twitterpated.")
-            return 1
-        else:
-            print("The input entered was not valid. Please enter one of specified prompts.")
-
-        print("1 - Search for Tweets\n2 - Search for Users\n3 - Write a "
-              "Tweet\n 4 - List Followers\n5 - Manage Lists\n6 - Logout")
-        f_input = input("What would you like to do? ")
-
     return 1
 
 # prompts the user to enter a keyword to be searched for in tweets and prints
@@ -128,7 +96,8 @@ def search_tweet(cur):
 def search_user(cur):
     return
 
-def write_tweet(cur):
+def write_tweet(cur, login):
+    tweet
     return
 
 def list_followers(cur):
