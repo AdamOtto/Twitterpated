@@ -10,7 +10,7 @@ drop table users;
 
 create table users (
   usr         int,
-  pwd	      char(20),
+  pwd	      char(4),
   name        char(20),
   email       char(15),
   city        char(12),
