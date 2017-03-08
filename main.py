@@ -39,10 +39,10 @@ while state != EXIT:
     if state == LOGIN:
         user_login = login(cur)
         # infinite tries could make a limited amout
-        while user_login(0) != 1 and user_login[0] != 2:
+        while user_login[0] != 1 and user_login[0] != 2:
             user_login = login(cur)
-        if user_login(0) == 1:
-            while user_login(0) = LOGGED_IN
+        if user_login[0] == 1:
+            while user_login[0] = LOGGED_IN
                 home_page()
                 functions()
                 state = EXIT
