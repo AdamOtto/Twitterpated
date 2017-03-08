@@ -1,11 +1,11 @@
 --users(usr,pwd, name,email,city,timezone)
-insert into users values (1,'passw0rd','Don Iveson','di@doniveson.ca','Edmonton',-7);
-insert into users values (2,'passw0rd','Jim Wu','djjim@gmail.com','Calgary',-7);
-insert into users values (3,'passw0rd','George Bush','gbush@twtr.com','Washington',-5);
-insert into users values (4,'passw0rd','Derrick Wai','dwai@uab.ca','Edmonton',-7);
-insert into users values (5,'passw0rd','Taylor Swift','tswift@twtr.com','Nashville',-6);
-insert into users values (6,'passw0rd','Joffrey Lupul','jlu@nhl.com','Toronto',-5);
-insert into users values (7,'passw0rd','Nicolas Cage','ncage@twtr.com','Sacramento',-7);
+insert into users values (1,'pass','Don Iveson','di@doniveson.ca','Edmonton',-7);
+insert into users values (2,'pass','Jim Wu','djjim@gmail.com','Calgary',-7);
+insert into users values (3,'pass','George Bush','gbush@twtr.com','Washington',-5);
+insert into users values (4,'pass','Derrick Wai','dwai@uab.ca','Edmonton',-7);
+insert into users values (5,'pass','Taylor Swift','tswift@twtr.com','Nashville',-6);
+insert into users values (6,'pass','Joffrey Lupul','jlu@nhl.com','Toronto',-5);
+insert into users values (7,'pass','Nicolas Cage','ncage@twtr.com','Sacramento',-7);
 
 --follows(flwer,flwee,start_date)
 insert into follows values (2,1,'01-SEP-2015');
