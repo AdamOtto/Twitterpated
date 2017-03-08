@@ -25,19 +25,49 @@ def getValidInput(valids, prompt = '', tries = float('inf')):
 # if login is specified gets the users id and password and checks to see if the user is
 #  in the table, returning 1 if they are 0 if they are not
 def login(cur):
-    userID = input("Please enter your user ID: ")
-    pswd = input("Please enter your password: ")
-
-    inputarr = [int(userID), pswd.ljust(4)] #password must be padded or it will not match
-    cur.execute("select name from users where usr = :1 and pwd = :2", inputarr)
-
-    name = cur.fetchall()[0][0]
-    if name:
-        print("Successfully logged in as: ", name, "!")
-        return (1, int(userID), name) 
+    userID = input("Please enter your user ID (Enter nothing to return to menu): ")
+    if not userID:
+        print("Returning to menu.")
+        return(2, None, None)
+    
+    if (userID.isdigit()):
+        query = "select * from users where usr = :ID"
+        cur.execute(query, {'ID':int(userID)})
+        user_info = cur.fetchall()
     else:
-        print("Incorrect username or password, please try again.")
+        print("Your user ID needs to be number.")
         return (0, None, None)
+    
+  #  print(user_info)
+    if user_info:
+        pswd = input("Please enter your password: ")
+        pswd.rstrip('\n')
+        if (user_info[0][1] == pswd):
+            print("Successfully logged in as: ", user_info[0][2], "!")
+            return (1, int(user_info[0][0]), user_info[0][2])             
+        else:
+            print("Incorrect username or password, please try again.")
+            return (0, None, None)   
+    else:
+        print("That username does not exist in the system, please try again.")
+        return (0, None, None)  
+    
+  #  type(userID)
+  #  type(pswd)
+  #  print("UserID:" + userID + "Password:" + pswd + ".")
+   # inputarr = [int(userID), pswd.ljust(4)] #password must be padded or it will not match
+   # cur.execute("select name from users where usr = :1 and pwd = :2", (int(userID), pswd))
+
+  # name = cur.fetchall()
+  #  print(name)
+    #name = name[0][0]
+  #  if name:
+ #       print("Successfully logged in as: ", name, "!")
+  #      return (1, int(userID), name) 
+  # else:
+   #     print("Incorrect username or password, please try again.")
+  #      return (0, None, None)
+    
 
 # if register is specified prompts the user for all the information to create a user in the table
 def register(cur):
@@ -61,6 +91,56 @@ def register(cur):
     print("Welcome ", name, ", your user ID is ", user, ", don't forget this as it is used to login.")
     print("Thank you for registering with Twitterpated!")
     return 1
+
+
+def home_page()
+'''
+Provides the opening homepage for initial user login. It explains
+some controls, and displays tweets of followed users 5 at a time.
+There is an option to go and use the program functions for more
+advanced usage.
+'''
+    print("Welcome to Twitterpated! Here are all your followed users' tweets:")
+    # @TODO need to get both tweets and retweets
+    cur.execute("select tid, writer, usr, tdate, text, replyto " +
+                "from tweets t, users u " +
+                "where t1.writer = u1.usr " + 
+                "union " + 
+                "select tid, writer, usr, rdate, text " + 
+                "from retweets r join users u1 on r. users u2, )
+
+
+# Provides a menu for the functions of the program
+def functions():
+    print("Welcome to Twitterpated! The functions of Twitterpated are listed below.")
+
+    print("1 - Search for Tweets\n2 - Search for Users\n3 - Write a "
+          "Tweet\n 4 - List Followers\n5 - Manage Lists\n6 - Logout")
+    f_input = input("What would you like to do? ")
+
+    while f_input:
+        if f_input == "1":
+            search_tweet(cur)
+        elif f_input == "2":
+            search_user(cur)
+        elif f_input == "3":
+            write_tweet(cur, user_login)
+        elif f_input == "4":
+            list_followers(cur)
+        elif f_input == "5":
+            manage_lists(cur)
+        elif f_input == "6":
+            print("Logging out of Twitterpated.")
+            return 1
+        else:
+            print("The input entered was not valid. Please enter one of specified prompts.")
+
+        print("1 - Search for Tweets\n2 - Search for Users\n3 - Write a "
+              "Tweet\n 4 - List Followers\n5 - Manage Lists\n6 - Logout")
+        f_input = input("What would you like to do? ")
+
+    return 1
+
 
 # prompts the user to enter a keyword to be searched for in tweets and prints
 #  ou the top 5 recent tweets and gives the user the option to select a tweet
