@@ -42,7 +42,7 @@ def login(cur):
     if user_info:
         pswd = input("Please enter your password: ")
         pswd.rstrip('\n')
-        if (user_info[0][1] == pswd):
+        if (user_info[0][1].strip() == pswd):
             print("Successfully logged in as: ", user_info[0][2], "!")
             return (1, int(user_info[0][0]), user_info[0][2])             
         else:
@@ -111,7 +111,7 @@ advanced usage.
 
 
 # Provides a menu for the functions of the program
-def functions():
+def functions(con, cur, userID):
     print("Welcome to Twitterpated! The functions of Twitterpated are listed below.")
 
     print("1 - Search for Tweets\n2 - Search for Users\n3 - Write a "
@@ -124,7 +124,7 @@ def functions():
         elif f_input == "2":
             search_user(cur)
         elif f_input == "3":
-            write_tweet(cur, user_login)
+            write_tweet(con, cur, userID)
         elif f_input == "4":
             list_followers(cur)
         elif f_input == "5":
@@ -176,8 +176,52 @@ def search_tweet(cur):
 def search_user(cur):
     return
 
-def write_tweet(cur, login):
-    tweet
+                
+#Gets the user to input a tweet, checks if less than 80 charcters, then adds tweet
+# finds where the # are and gets the words, adding them to mentions and then checking
+# if it is already in hashtags and if not adding into it.
+def write_tweet(con, cur, userID):
+    t_text = input("Enter your tweet(Max 80 character): ")
+    
+    if len(t_text) > 80:
+        print("The tweet you have entered is too long, please try again.")
+        return
+    
+    cur.execute("select NVL(max(tid),-1) from tweets")
+    tweetID = cur.fetchall()
+    tweetID = int(tweetID[0][0])
+    tweetID += 1 
+    
+    print(tweetID)
+    
+    query = "insert into tweets values (:t, :wrt, SYSDATE, :txt, null)"
+    cur.execute(query,{'t':tweetID, 'wrt':userID, 'txt':t_text})
+    print("done")
+    con.commit()
+
+    
+    print ([pos for pos, char in enumerate(t_text) if char == '#'])
+    index_hash = ([pos for pos, char in enumerate(t_text) if char == '#'])
+    for index in index_hash:
+        end_index = index
+        while t_text[end_index].isalpha():
+            end_index += 1
+            
+        hash_tag = t_text[index+1:end_index]
+        print(hash_tag)
+        # might need to check if hashtag is less than 10 characters
+                
+        query = "insert into mentions values(:t, :ht)"
+        cur.execute(query, {'t':tweetID, 'ht':hash_tag})
+        
+        query = "select * from hashtags where term = :ht"
+        cur.execute(query, {'ht',hash_tag})
+        trm = cur.fetchall()
+        if not trm:
+            query = "insert into hashtags value(:h_tag)"
+            cur.execute(query, {'h_tag':hash_tag})           
+             
+    con.commit
     return
 
 def list_followers(cur):
