@@ -1,4 +1,5 @@
 import pdb
+import queries
 
 def getValidInput(valids, prompt = '', tries = float('inf')):
     """
@@ -178,24 +179,9 @@ def search_tweet(cur):
     return
 
 def search_user(cur):
-    keyword = input("Please enter the name or city or the user you would like to search for: ")
+    keyword = input("Please enter the name or city of the user you would like to search for: ")
     keyword = keyword.strip()
-    #Query version: 09/03/2017, @TODO remove namelength, citylength for production
-    cur.execute("select NVL(u1.name, u2.name), NVL(u1.city, u2.city), namelength, citylength " +
-        "from " +
-        "( " +
-        "select u1.name, u1.city, rank() over (order by length(replace(u1.name, ' ', '')) asc) as namelength " +
-        "from users u1 " +
-        "where lower(u1.name) like ('%' || :keyword || '%') " +
-        ") u1 " +
-        "full outer join " +
-        "( " +
-        "select u2.name, u2.city, rank() over (order by length(replace(u2.city, ' ', '')) asc) as citylength " +
-        "from users u2 " +
-        "where lower(u2.city) like ('%' || :keyword || '%') " +
-        ") u2 " +
-        "on u1.name = u2.name and u1.city = u2.city " +
-        "order by namelength, citylength", [keyword, keyword])
+    cur.execute(queries.search_users_keyword, [keyword, keyword])
     results = cur.fetchall()
     for row in results:
         print(*row)
@@ -277,7 +263,7 @@ def manage_lists(cur):
             print("The input entered was not valid. Please enter one of specified prompts.")
             
         print("1 - View Your Lists\n2 - See Lists You Are On\n3 - Create a "
-          "New List\n 4 - Add or Delete Members From Your Lists\n5 - Return to Main Menu")
+          "New List\n4 - Add or Delete Members From Your Lists\n5 - Return to Main Menu")
         f_input = input("What would you like to do? ")
     return
 
@@ -293,7 +279,7 @@ def edit_lists(cur):
 def create_list(cur):
     pass
 
-def scrolling_disp(table_rows, display size input_wanted = 0, prompt = ''):
+def scrolling_disp(table_rows, display_size, input_wanted = 0, prompt = ''):
     '''
     Meant to handle the 'display 5 at a time requirement'. Takes a table and produces a
     scrolling display of the table. If input on the display is required it will 
