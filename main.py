@@ -42,7 +42,7 @@ while state != EXIT:
         while user_login[0] != 1 and user_login[0] != 2:
             user_login = login(cur)
         if user_login[0] == 1:
-            while user_login[0] = LOGGED_IN
+            while user_login[0] == LOGGED_IN:
                 home_page()
                 functions(con, cur, user_login[1])
                 state = EXIT
@@ -51,7 +51,7 @@ while state != EXIT:
         elif user_login[0] == 2:
             state = WELCOME
         
-        else
+        else:
             print("Login function error")
 
     elif state == REGISTER:

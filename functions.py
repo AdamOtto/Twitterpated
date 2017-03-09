@@ -7,7 +7,7 @@ def getValidInput(valids, prompt = '', tries = float('inf')):
     prompt = str an initial prompt for user input, default ''
     valids = list of valid inputs
     tries = int of max loop amount, default 10
-
+    
     returns input if valid input is found, otherwise None
     """
     attempt = 0
@@ -93,13 +93,17 @@ def register(cur):
     return 1
 
 
-def home_page()
-'''
-Provides the opening homepage for initial user login. It explains
-some controls, and displays tweets of followed users 5 at a time.
-There is an option to go and use the program functions for more
-advanced usage.
-'''
+def home_page():
+    '''
+    @ TODO this is not complete at all
+    Provides the opening homepage for initial user login. It explains
+    some controls, and displays tweets of followed users 5 at a time.
+    There is an option to go and use the program functions for more
+    advanced usage.
+    '''
+    
+    return
+    
     print("Welcome to Twitterpated! Here are all your followed users' tweets:")
     # @TODO need to get both tweets and retweets
     cur.execute("select tid, writer, usr, tdate, text, replyto " +
@@ -107,7 +111,7 @@ advanced usage.
                 "where t1.writer = u1.usr " + 
                 "union " + 
                 "select tid, writer, usr, rdate, text " + 
-                "from retweets r join users u1 on r. users u2, )
+                "from retweets r join users u1 on r. users u2, ")
 
 
 # Provides a menu for the functions of the program
@@ -146,16 +150,16 @@ def functions(con, cur, userID):
 #  ou the top 5 recent tweets and gives the user the option to select a tweet
 #  and get some stats about it or recieve the next 5 tweets.
 def search_tweet(cur):
-    keyword = input("Please enter the keyword(s) you would like search. (If you"
+    keyword = input("Please enter the keyword(s) you would like to search. (If you"
                     " are entering more than one keyword, please seperate using"
                     " a ','): ")
 
     keyword.split(',')
     for word in keyword:
-        word.strip()
+        word = word.strip()
         cur.execute("select text from " + 
                     "(select text, row_number() over (order by tdate desc) as row_num " + 
-                    "from tweets where text like '%:word%') where row_num <= 5", (word)) #@TODO does this correctly execute the %% modifiers? Or is it considering the variable name as "word%"?
+                    "from tweets where text like ('%' || :word || '%')) where row_num <= 5", (word))
         tweets = cur.fetchall()
         index = 1
         for tweet in tweets:
@@ -169,11 +173,34 @@ def search_tweet(cur):
                 cur.execute("select text from " + 
                             "(select text, row_number(order by tdate descending) as row_num " + 
                             "from tweets where text like '%:word%') where row_num <= 5", (word))
-                #not finished
+                # @TODO not finished
 
     return
 
 def search_user(cur):
+    keyword = input("Please enter the name or city or the user you would like to search for: ")
+    keyword = keyword.strip()
+    #Query version: 09/03/2017, @TODO remove namelength, citylength for production
+    cur.execute("select NVL(u1.name, u2.name), NVL(u1.city, u2.city), namelength, citylength " +
+        "from " +
+        "( " +
+        "select u1.name, u1.city, rank() over (order by length(replace(u1.name, ' ', '')) asc) as namelength " +
+        "from users u1 " +
+        "where lower(u1.name) like ('%' || :keyword || '%') " +
+        ") u1 " +
+        "full outer join " +
+        "( " +
+        "select u2.name, u2.city, rank() over (order by length(replace(u2.city, ' ', '')) asc) as citylength " +
+        "from users u2 " +
+        "where lower(u2.city) like ('%' || :keyword || '%') " +
+        ") u2 " +
+        "on u1.name = u2.name and u1.city = u2.city " +
+        "order by namelength, citylength", [keyword, keyword])
+    results = cur.fetchall()
+    for row in results:
+        print(*row)
+        
+    #@TODO needs more functions
     return
 
                 
