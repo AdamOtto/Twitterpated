@@ -41,6 +41,9 @@ insert into retweets values (@usrID, @tweetId, CURRENT_DATE);
 
 2.
 - given a keyword, return all users whose names contain the keyword followed by the list of cities that contain the key word, sorted from shortest to longest
+-- THIS QUERY IS IMPLEMENTED DO NOT CHANGE WITHOUT UPDATING VERSION NUMBER AND INSTANCE IN PROGRAM
+-- VERSION:
+-- AUSTIN 09/03/2017
 define @keyword char[20]
 
 select NVL(u1.name, u2.name), NVL(u1.city, u2.city), namelength, citylength

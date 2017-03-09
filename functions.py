@@ -105,7 +105,7 @@ def home_page():
     return
     
     print("Welcome to Twitterpated! Here are all your followed users' tweets:")
-    # @TODO need to get both tweets and retweets
+    # @TODO need to get both tweets and retweets, this query is bad
     cur.execute("select tid, writer, usr, tdate, text, replyto " +
                 "from tweets t, users u " +
                 "where t1.writer = u1.usr " + 
@@ -119,7 +119,7 @@ def functions(con, cur, userID):
     print("Welcome to Twitterpated! The functions of Twitterpated are listed below.")
 
     print("1 - Search for Tweets\n2 - Search for Users\n3 - Write a "
-          "Tweet\n 4 - List Followers\n5 - Manage Lists\n6 - Logout")
+          "Tweet\n4 - List Followers\n5 - Manage Lists\n6 - Logout")
     f_input = input("What would you like to do? ")
 
     while f_input:
@@ -255,4 +255,46 @@ def list_followers(cur):
     return
 
 def manage_lists(cur):
+    print("Welcome to list management, what would you like to do?.")
+
+    print("1 - View Your Lists\n2 - See Lists You Are On\n3 - Create a "
+          "New List\n4 - Add or Delete Members From Your Lists\n5 - Return to Main Menu")
+    f_input = input("What would you like to do? ")
+
+    while f_input:
+        if f_input == "1":
+            view_user_lists(cur)
+        elif f_input == "2":
+            view_user_list_membership(cur)
+        elif f_input == "3":
+            edit_lists(cur)
+        elif f_input == "4":
+            create_list(cur)
+        elif f_input == "5":
+            print("Returning to main menu.")
+            return
+        else:
+            print("The input entered was not valid. Please enter one of specified prompts.")
+            
+        print("1 - View Your Lists\n2 - See Lists You Are On\n3 - Create a "
+          "New List\n 4 - Add or Delete Members From Your Lists\n5 - Return to Main Menu")
+        f_input = input("What would you like to do? ")
     return
+
+def view_user_lists(cur):
+    pass
+
+def view_user_list_membership(cur):
+    pass
+
+def edit_lists(cur):
+    pass
+
+def create_list(cur):
+    pass
+
+def scrolling_disp(table_rows, display size input_wanted = 0, prompt = ''):
+    '''
+    Meant to handle the 'display 5 at a time requirement'. Takes a table and produces a
+    scrolling display of the table. If input on the display is required it will 
+    '''
