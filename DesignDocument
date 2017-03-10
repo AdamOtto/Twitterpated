@@ -1,0 +1,21 @@
+Overview:
+Twitterpated is an application that allows users to create and share short messages called "tweets".  The user is able to follow other users and to see all their tweets and reply to them, allowing them to share ideas, news and opinions.  Users can also share tweets so all their followers can see the shared tweet. Tweets can also contain hashtags.  Hashtags are used for searching and to associate a tweet with a certain topic.  Lastly, users can create a list of their favourite users to keep track of.
+Design:
+The implementation of Twitterpated is done in python using cx_oracle to connect to the database.  Queries used were either hardcoded into the pyton files or in a separate sql file that could be accessed by our program.
+ To use Twitterpated, the user can open the application by using a command terminal to compile and run the python file “main”.  Here the user will have three options: register, login or exit.
+Registering will create an account used to interact with Twitterpated.  The user will be prompted to enter: their name, e-mail, city, time-zone and a four digit password.  Creating an account will generate a user ID that is used to identify the account and for logging in later.  Once registered, the user will be automatically logged in with the new account.  
+Logging in will allow a user to access an already existing account.  A user can log in by inputting their user ID and password.  If the entered ID and password match what was created on registering, then the user is brought to their homepage.  Otherwise the user can try again to log in, or enter nothing to quit back to the main menu.
+The user’s homepage is the main hub for interaction with Twitterpated.  The user can search for other users and tweets, manage their favourite lists, view their followers, write tweets and log out.  The homepage also displays the most recent tweets of followed users in intervals of 5.
+When a user writes a tweet they are prompted to enter an 80 characters or less string.  The application will enforce this constraint and parse through the tweet to find any hashtags.  If a hashtag is found it is added to the database if it doesn’t already exist.  An associated mentions column is also created so the tweet can be found later when searching hashtags.
+Searching for tweets is done by prompting the user to input one or several keywords.  This keyword can either be a hashtag value or a word that appears in the text of the tweet.  The tweets found to match the keywords are displayed in intervals of 5.  The user can continue browsing the tweets or quit at any time.
+When searching for users a keyword identifying the user or this city they live in is used.  The returning results will first display the users that match the keyword in ascending order of name length.  The results matching the city will be displayed afterwards in a similar order.
+Viewing following users will display the ID and names of all following users.  The query is simple and doesn’t order the results in any meaningful way.
+The user is given three prompts when they want to manage their favourites list: create, view existing lists and see which lists other lists the user was added to.  A new list will require a name that isn’t being used by another user.  Viewing you existing lists will display the name of each list you own.  And viewing the lists you appear on will display the names of the lists you’re included in.
+Testing:
+The sql statements used for this project were tested separately using self created test data.  The results of the queries were used to determine if they were effective in returning the proper results.
+Group work strategy:
+Austin:
+Adam:
+Dylan:
+
+
