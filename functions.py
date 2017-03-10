@@ -289,7 +289,7 @@ def manage_lists(con, cur, userID):
         elif f_input == "3":
             create_list(con, cur, userID)
         elif f_input == "4":
-            edit_lists(cur)
+            edit_lists(con, cur, userID)
         elif f_input == "5":
             print("Returning to main menu.")
             return
@@ -297,6 +297,7 @@ def manage_lists(con, cur, userID):
             print("The input entered was not valid. Please enter one of specified prompts.")
             
         os.system(CLEAR_SCREEN)
+        print("Welcome to list management, what would you like to do?.")
         print("1 - View Your Lists\n2 - See Lists You Are On\n3 - Create a "
           "New List\n4 - Add or Delete Members From Your Lists\n5 - Return to Main Menu")
         f_input = input("What would you like to do? ")
@@ -341,10 +342,53 @@ def create_list(con, cur, userID):
             print("Sorry, but that list name has been taken")
         pause_until_input()    
         
-def edit_lists(cur):
+def edit_lists(con, cur, userID):
     os.system(CLEAR_SCREEN)
-    
+    print("Welcome to list management, what would you like to do?.")
+    print("1 - Add to list\n2 - Remove from list\n3 - Return to Main Menu")
+    f_input = input("What would you like to do? ")
+    while f_input:
+        if f_input == "1":
+            add_to_list(con, cur, userID)
+        elif f_input == "2":
+            remove_from_list(cur, userID)
+        elif f_input == "3":
+            return
+        os.system(CLEAR_SCREEN)
+        print("Welcome to list management, what would you like to do?.")
+        print("1 - Add to list\n2 - Remove from list\n3 - Return to Main Menu")
+        f_input = input("What would you like to do? ")
+        
+
+def add_to_list(con, cur, userID):
+    cur.execute(queries.get_user_lists, [userID])
+    lists = cur.fetchall()
+    if lists == []:
+        print("You do not have any lists. You should go make one!")
+        pause_until_input()
+        return
+
+
+    uID = input("Please Enter the user ID you would like to add: ")
+    cur.execute(queries.does_user_exist, [uID])
+    lists = cur.fetchall()
+    if lists != []:
+        
+        lname = get_valid_input(length = 12, prompt = "Which list would you like to add this user to? (Enter nothing to cancel): ")
+        if lname:
+            #cur.execute(queries.see_if_list_exists, [lname, uID])
+            
+            #cur.execute(queries.add_member_to_list, [lname, uID])
+            #con.commit()
+            #print("Successfully added " + uID + " to list " + lname + ".")
+    else:
+        print("This user doesn't exist.")
     pause_until_input()
+    return
+
+def remove_from_list(cur, userID):
+    pause_until_input()
+    return
 
 def pause_until_input():
     input("Press Enter To Continue")

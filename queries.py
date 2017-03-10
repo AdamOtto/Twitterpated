@@ -222,3 +222,18 @@ DELETE FROM includes
 where lname = :listName
 AND member = :userId;
 '''
+
+'''
+Check to see if a user exists.  We dont want someone to add
+a user that doesn't exist to their lists.
+'''
+does_user_exist = '''
+select u.usr
+from users u
+where u.usr = :userId
+'''
+
+
+add_member_to_list = '''
+insert into includes values (:listName, :userId);
+'''
