@@ -1,23 +1,38 @@
 import pdb
 import queries
+import os
 
-def getValidInput(valids, prompt = '', tries = float('inf')):
+CLEAR_SCREEN = 'cls' if os.name == 'nt' else 'clear'
+
+def get_valid_input(length = 20, valids = [], valids_description = None, prompt = '', tries = float('inf')):
     """
     Will attempt to grab input from the user and check if it belongs to the
     passed list of valids, if not it will loop a maximum of tries times.
+    length = max input length
+    valids = list of valid inputs, optional, if left blank only checks against length
+    valids_description = a description of the valids that is used to help a user if they input something invalid, default None
     prompt = str an initial prompt for user input, default ''
-    valids = list of valid inputs
-    tries = int of max loop amount, default 10
+    tries = int of max loop amount, default infinite, if tries exceed and no input given, returns none
     
     returns input if valid input is found, otherwise None
     """
     attempt = 0
     while attempt < tries:
-        print(prompt, end = '')
-        instr = input()
-        if instr in valids: break
-        print("That is not a valid input")
-        attempt = attempt + 1
+        attempt = attempt +1
+        instr = input(prompt)
+        #Length check first
+        if len(instr) > length:
+            print("That input is too long, the max is " + str(length) + " chars long")
+            continue
+        #Valids check if applicable
+        if valids != []:
+            if instr in valids:
+                break
+            print("That is not a valid input (", end = '')
+            print(*valids, end = '') if valids_description is None else print(valids_description, end = '')
+            print(")")
+        else:
+            break
     if attempt >= tries:
         return None
     return instr
@@ -72,6 +87,7 @@ def login(cur):
 
 # if register is specified prompts the user for all the information to create a user in the table
 def register(cur):
+    os.system(CLEAR_SCREEN)
     name = input("Enter your name: ")
     email = input("Enter your email: ")
     city = input("Enter the city you live in: ")
@@ -91,10 +107,12 @@ def register(cur):
     print("successfully registered")
     print("Welcome ", name, ", your user ID is ", user, ", don't forget this as it is used to login.")
     print("Thank you for registering with Twitterpated!")
+    pause_until_input()
     return 1
 
 
-def home_page():
+def home_page(con, cur, userID):
+    os.system(CLEAR_SCREEN)
     '''
     @ TODO this is not complete at all
     Provides the opening homepage for initial user login. It explains
@@ -117,6 +135,7 @@ def home_page():
 
 # Provides a menu for the functions of the program
 def functions(con, cur, userID):
+    os.system(CLEAR_SCREEN)
     print("Welcome to Twitterpated! The functions of Twitterpated are listed below.")
 
     print("1 - Search for Tweets\n2 - Search for Users\n3 - Write a "
@@ -131,9 +150,9 @@ def functions(con, cur, userID):
         elif f_input == "3":
             write_tweet(con, cur, userID)
         elif f_input == "4":
-            list_followers(cur)
+            list_followers(cur, userID)
         elif f_input == "5":
-            manage_lists(cur)
+            manage_lists(con, cur, userID)
         elif f_input == "6":
             print("Logging out of Twitterpated.")
             return 1
@@ -141,9 +160,10 @@ def functions(con, cur, userID):
             print("The input entered was not valid. Please enter one of specified prompts.")
 
         print("1 - Search for Tweets\n2 - Search for Users\n3 - Write a "
-              "Tweet\n 4 - List Followers\n5 - Manage Lists\n6 - Logout")
+              "Tweet\n4 - List Followers\n5 - Manage Lists\n6 - Logout")
         f_input = input("What would you like to do? ")
 
+    pause_until_input()
     return 1
 
 
@@ -151,6 +171,7 @@ def functions(con, cur, userID):
 #  ou the top 5 recent tweets and gives the user the option to select a tweet
 #  and get some stats about it or recieve the next 5 tweets.
 def search_tweet(cur):
+    os.system(CLEAR_SCREEN)
     keyword = input("Please enter the keyword(s) you would like to search. (If you"
                     " are entering more than one keyword, please seperate using"
                     " a ','): ")
@@ -175,10 +196,11 @@ def search_tweet(cur):
                             "(select text, row_number(order by tdate descending) as row_num " + 
                             "from tweets where text like '%:word%') where row_num <= 5", (word))
                 # @TODO not finished
-
+    pause_until_input()
     return
 
 def search_user(cur):
+    os.system(CLEAR_SCREEN)
     keyword = input("Please enter the name or city of the user you would like to search for: ")
     keyword = keyword.strip()
     cur.execute(queries.search_users_keyword, [keyword, keyword])
@@ -187,6 +209,7 @@ def search_user(cur):
         print(*row)
         
     #@TODO needs more functions
+    pause_until_input()
     return
 
                 
@@ -194,6 +217,7 @@ def search_user(cur):
 # finds where the # are and gets the words, adding them to mentions and then checking
 # if it is already in hashtags and if not adding into it.
 def write_tweet(con, cur, userID):
+    os.system(CLEAR_SCREEN)
     t_text = input("Enter your tweet(Max 80 character): ")
     
     if len(t_text) > 80:
@@ -235,52 +259,92 @@ def write_tweet(con, cur, userID):
             cur.execute(query, {'h_tag':hash_tag})           
              
     con.commit
+    pause_until_input()
     return
 
-def list_followers(cur):
+def list_followers(cur, userID):
+    os.system(CLEAR_SCREEN)
+    cur.execute(queries.get_users_followers, [userID])
+    followers = cur.fetchall()
+    if followers != []:
+        for row in followers:
+            print(*row)
+    else:
+        print("You do not seem to have anybody following you... maybe write some tweets?")
+    pause_until_input()
     return
 
-def manage_lists(cur):
+def manage_lists(con, cur, userID):
+    os.system(CLEAR_SCREEN)
     print("Welcome to list management, what would you like to do?.")
-
     print("1 - View Your Lists\n2 - See Lists You Are On\n3 - Create a "
           "New List\n4 - Add or Delete Members From Your Lists\n5 - Return to Main Menu")
     f_input = input("What would you like to do? ")
 
     while f_input:
         if f_input == "1":
-            view_user_lists(cur)
+            view_user_lists(cur, userID)
         elif f_input == "2":
-            view_user_list_membership(cur)
+            view_user_list_membership(cur, userID)
         elif f_input == "3":
-            edit_lists(cur)
+            create_list(con, cur, userID)
         elif f_input == "4":
-            create_list(cur)
+            edit_lists(cur)
         elif f_input == "5":
             print("Returning to main menu.")
             return
         else:
             print("The input entered was not valid. Please enter one of specified prompts.")
             
+        os.system(CLEAR_SCREEN)
         print("1 - View Your Lists\n2 - See Lists You Are On\n3 - Create a "
           "New List\n4 - Add or Delete Members From Your Lists\n5 - Return to Main Menu")
         f_input = input("What would you like to do? ")
+        
+    
+    pause_until_input()
     return
 
-def view_user_lists(cur):
-    pass
+def view_user_lists(cur, userID):
+    os.system(CLEAR_SCREEN)
+    cur.execute(queries.get_user_lists, [userID])
+    lists = cur.fetchall()
+    if lists != []:
+        for row in lists:
+            print(*row)
+    else:
+        print("You do not have any lists")
+    pause_until_input()
+            
+def view_user_list_membership(cur, userID):
+    os.system(CLEAR_SCREEN)
+    cur.execute(queries.get_lists_containing_user, [userID])
+    lists = cur.fetchall()
+    if lists != []:
+        for row in lists:
+            print(*row)
+    else:
+        print("You are not on any lists")
+    pause_until_input()
 
-def view_user_list_membership(cur):
-    pass
-
+def create_list(con, cur, userID):
+    os.system(CLEAR_SCREEN)
+    lname = get_valid_input(length = 14, prompt = "What would you like to name your new list (Enter nothing to cancel): ")
+    if lname:
+        cur.execute(queries.see_if_list_exists, [lname])
+        lists = cur.fetchall()
+        if lists == []:
+            cur.execute(queries.create_new_list, [lname, userID])
+            con.commit()
+            print("Successfully created list: " + lname)
+        else:
+            print("Sorry, but that list name has been taken")
+        pause_until_input()    
+        
 def edit_lists(cur):
-    pass
+    os.system(CLEAR_SCREEN)
+    
+    pause_until_input()
 
-def create_list(cur):
-    pass
-
-def scrolling_disp(table_rows, display_size, input_wanted = 0, prompt = ''):
-    '''
-    Meant to handle the 'display 5 at a time requirement'. Takes a table and produces a
-    scrolling display of the table. If input on the display is required it will 
-    '''
+def pause_until_input():
+    input("Press Enter To Continue")

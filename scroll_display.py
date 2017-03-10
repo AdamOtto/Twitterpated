@@ -12,8 +12,8 @@ The class should handle all of the bounds checks here.
 
 class ScrollDisplay(object):
 	
-	def __init__(self):
-		pass
+	def __init__(self, t):
+		table = t
 	
 	def toString(self):
 		return 'This is my print function'

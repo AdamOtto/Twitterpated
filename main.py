@@ -28,7 +28,7 @@ while state != EXIT:
         print("1 - Login")
         print("2 - Register")
         print("3 - Exit")
-        instr = getValidInput(['1','2','3'])
+        instr = get_valid_input(valids = ['1','2','3'])
         if instr is None or instr is '3':
             state = EXIT
         elif instr is '2':
@@ -43,7 +43,7 @@ while state != EXIT:
             user_login = login(cur)
         if user_login[0] == 1:
             while user_login[0] == LOGGED_IN:
-                home_page()
+                home_page(con, cur, user_login[1])
                 functions(con, cur, user_login[1])
                 state = EXIT
                 break

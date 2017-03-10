@@ -6,7 +6,7 @@ define @keyword char[20]
 search_tweets_keyword = '''
 	select t.text as "Text"
 	from tweets t
-	where t.text like ('%' || @keyword || '%')
+	where t.text like ('%' || :keyword || '%')
 	'''
 
 '''
@@ -17,12 +17,12 @@ define @tweetId integer
 get_tweet_rtwts_reps = '''
 select (    select count(t.replyto)
             from tweets t
-             where t.replyto = @tweetId
+             where t.replyto = :tweetId
         ) replyCount,
         (
             select count(r.tid)
             from retweets r
-            where r.tid = @tweetId
+            where r.tid = :tweetId
         ) retweetCount
 from dual
 '''
@@ -35,7 +35,7 @@ define @writerId integer, @replyToId integer, @text char[120]
 create_reply_tweet = '''
 insert into tweets
 (tid, writer, tdate, text, replyto)
-select (count(*) + 1) "newId", @writerId, CURRENT_DATE, @text,@replyToId
+select (count(*) + 1) "newId", :writerId, CURRENT_DATE, :text,:replyToId
 from tweets
 '''
 
@@ -45,7 +45,7 @@ define @tweetId integer, @usrId integer
 '''
 
 create_retweet = '''
-insert into retweets values (@usrID, @tweetId, CURRENT_DATE)
+insert into retweets values (:usrID, :tweetId, CURRENT_DATE)
 '''
 
 
@@ -61,13 +61,13 @@ search_users_keyword = """
 	(
 	select u1.name, u1.city, rank() over (order by length(replace(u1.name, ' ', '')) asc) as namelength
 	from users u1
-	where lower(u1.name) like ('%' || :keyword || '%')
+	where lower(u1.name) like ('%' || lower(:keyword) || '%')
 	) u1
 	full outer join
 	(
 	select u2.name, u2.city, rank() over (order by length(replace(u2.city, ' ', '')) asc) as citylength
 	from users u2
-	where lower(u2.city) like ('%' || :keyword || '%')
+	where lower(u2.city) like ('%' || lower(:keyword) || '%')
 	) u2
 	on u1.name = u2.name and u1.city = u2.city
 	order by namelength, citylength
@@ -82,7 +82,7 @@ define @usrId Integer
 get_user_tweet_count = '''
 select count(*)
 from tweets
-where writer = @usrId
+where writer = :usrId
 '''
 
 '''
@@ -92,7 +92,7 @@ define @usrId Integer
 get_user_follows_count = '''
 select count(*)
 from follows
-where flwer = @usrId
+where flwer = :usrId
 '''
 
 '''
@@ -102,7 +102,7 @@ define @usrId Integer
 get_user_follower_count = '''
 getselect count(*)
 from follows
-where flwee = @usrId
+where flwee = :usrId
 '''
 
 '''
@@ -113,7 +113,7 @@ define @usrId Integer
 get_user_tweets = '''
 select text
 from tweets
-where writer = @usrId
+where writer = :usrId
 order by tdate desc
 '''
 
@@ -126,8 +126,8 @@ define @userId Integer, @text char[120]
 create_tweet = '''
 insert into tweets
 (tid, writer, tdate, text, replyto)
-select (count(*) + 1) "newId", @writerId, CURRENT_DATE, @text, null
-from tweets;
+select (count(*) + 1) "newId", :writerId, CURRENT_DATE, :text, null
+from tweets
 '''
 
 '''
@@ -136,7 +136,7 @@ define @tid Integer, @hashtag char[20]
 '''
 
 create_mention_by_hashtag = '''
-insert into mentions values (@tid, @hashtag);
+insert into mentions values (:tid, :hashtag)
 '''
 
 
@@ -145,10 +145,10 @@ insert into mentions values (@tid, @hashtag);
 given a user id, return all followers of the user
 define @usrId Integer
 '''
-get_user_followees = '''
-select count(*)
-from follows
-where flwee = @usrId
+get_users_followers = '''
+select usr, name
+from follows, users
+where flwee = :usrId and flwer = usr
 '''
 
 '''
@@ -156,7 +156,7 @@ given a user id 'follower' and user id 'followee', insert an entry into the foll
 define @follower Integer, @followee Integer
 '''
 create_follows_user_follows_user = '''
-insert into follows values (@follower, @followee, CURRENT_DATE);
+insert into follows values (:follower, :followee, CURRENT_DATE)
 '''
 
 '''
@@ -172,7 +172,7 @@ define @usrId Integer
 get_user_lists = '''
 select lname
 from lists
-where owner = @usrId
+where owner = :usrId
 '''
 
 '''
@@ -182,7 +182,16 @@ define @usrId Integer
 get_lists_containing_user = '''
 select lname
 from includes
-where member = @usrId
+where member = :usrId
+'''
+
+'''
+given a string, see if there is a list with that exact name
+'''
+see_if_list_exists = '''
+select lname
+from lists
+where lists.lname = :testname
 '''
 
 '''
@@ -190,7 +199,7 @@ given a user id and a list name, insert a new list into the lists table
 define @userId Integer, @listName char[20]
 '''
 create_new_list = '''
-insert into lists values (@listName, @userId);
+insert into lists values (:listName, :userId)
 '''
 
 '''
@@ -201,7 +210,7 @@ get_list_members = '''
 select u.name
 from users u
 join includes i on u.usr = i.member
-where i.lname = @listName
+where i.lname = :listName
 '''
 
 '''
@@ -210,6 +219,6 @@ define @listName char[20], @userId Integer
 '''
 delete_member_from_list = '''
 DELETE FROM includes
-where lname = @listName
-AND member = @userId;
+where lname = :listName
+AND member = :userId;
 '''
