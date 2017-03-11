@@ -599,5 +599,3 @@ def view_user(con, cur, userID, viewID):
             
     pause_until_input()
     return
-    
-    
