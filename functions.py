@@ -146,7 +146,7 @@ def functions(con, cur, userID):
         if f_input == "1":
             search_tweet(cur)
         elif f_input == "2":
-            search_user(con, cur)
+            search_user(con, cur, userID)
         elif f_input == "3":
             write_tweet(con, cur, userID)
         elif f_input == "4":
@@ -158,7 +158,8 @@ def functions(con, cur, userID):
             return 1
         else:
             print("The input entered was not valid. Please enter one of specified prompts.")
-
+            
+        os.system(CLEAR_SCREEN)
         print("1 - Search for Tweets\n2 - Search for Users\n3 - Write a "
               "Tweet\n4 - List Followers\n5 - Manage Lists\n6 - Logout")
         f_input = input("What would you like to do? ")
@@ -207,7 +208,7 @@ def search_tweet(cur):
     pause_until_input()
     return
 
-def search_user(con, cur):
+def search_user(con, cur, userID):
     os.system(CLEAR_SCREEN)
     keyword = input("Please enter the name or city of the user you would like to search for: ")
     keyword = keyword.strip()
@@ -240,7 +241,7 @@ def search_user(con, cur):
                 blanking_input("Sorry, but that user does not exist, enter to continue") #make a dissapearing error prompt
                 skip_print = True #We need to continue the loop, but not move the cursor
                 continue
-            view_user(cur, choice)
+            view_user(con, cur, userID, choice)
             return
         print("Search ended")
         break
@@ -479,26 +480,32 @@ def blanking_input(prompt):
     print(len(prompt)*" ", end = '\r') #write over prompt with spaces, then return to start of line
     return instr
 
-def view_user(cur, userID):
+def view_user(con, cur, userID, viewID):
+    '''
+    shows user stats and tweets for user viewID, option for userID to follow viewID is presented
+    '''
     os.system(CLEAR_SCREEN)
-    cur.execute(queries.get_user_name, [userID])
+    cur.execute(queries.get_user_name, [viewID])
     name = cur.fetchone()
-    name = name[0]
+    name = name[0].strip()
     print("Stats about " + name)
-    cur.execute(queries.get_user_tweet_count, [userID])
+    cur.execute(queries.get_user_tweet_count, [viewID])
     twt_cnt = cur.fetchone()
     twt_cnt = twt_cnt[0]
     print("Number of tweets: " + str(twt_cnt))
-    cur.execute(queries.get_user_follows_count, [userID])
+    cur.execute(queries.get_user_follows_count, [viewID])
     flw_cnt = cur.fetchone()
     flw_cnt = flw_cnt[0]
     print("Number of people they follow: " + str(flw_cnt))
-    cur.execute(queries.get_user_follower_count, [userID])
+    cur.execute(queries.get_user_follower_count, [viewID])
     flwe_cnt = cur.fetchone()
     flwe_cnt = flwe_cnt[0]
     print("Number of people who follow them: " + str(flwe_cnt))
-    cur.execute(queries.get_user_tweets, [userID])
+    cur.execute(queries.get_user_tweets, [viewID])
+    
+    print("\nHere are " + name + "'s most recent tweets:")
     first_time = True
+    end = False
     while True:
         results = cur.fetchmany(numRows = 3 if first_time else 5)
         
@@ -507,14 +514,28 @@ def view_user(cur, userID):
         
         if len(results) == 0 and first_time:
             print("This user has no tweets.")
-            break
+            end = True
+            
         if (len(results) < 5 and not first_time) or (first_time and len(results) < 3):
             print("This user has no more tweets.")
-            break
+            end = True
         first_time = False
-        choice = blanking_input("[Enter] = see more, anything else returns to previous menu: ")
-        if choice == "":
+        if not end:
+            choice = blanking_input("[Enter] = more tweets, [f] = follow them, everything else = return: ")
+        else:
+            choice = blanking_input("[f] = follow them, everything else = return: ")
+        if choice == "" and not end:
             continue
+        elif choice =="f":
+            cur2 = con.cursor()
+            cur2.execute("select * from follows where flwer = :userID and flwee = :viewID", [userID, viewID])
+            check = cur2.fetchone()
+            if check is None or check == []:
+                cur2.execute(queries.create_flw_follower_follows_followee, [userID, viewID])
+                con.commit()
+                print("You have successfully begun following " + name)
+            else:
+                print("You already follow " + name + "!") 
         else:
             print("Finished viewing")
             break

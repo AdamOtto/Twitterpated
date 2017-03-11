@@ -126,6 +126,13 @@ from users u
 where u.usr = :usrID
 '''
 
+'''
+given a user id 'follower' and user id 'followee', insert an entry into the follows table
+define @follower Integer, @followee Integer
+'''
+create_flw_follower_follows_followee = '''
+insert into follows values (:follower, :followee, CURRENT_DATE)
+'''
 
 ########################Question 3####################
 '''
@@ -158,14 +165,6 @@ get_users_followers = '''
 select usr, name
 from follows, users
 where flwee = :usrId and flwer = usr
-'''
-
-'''
-given a user id 'follower' and user id 'followee', insert an entry into the follows table
-define @follower Integer, @followee Integer
-'''
-create_follows_user_follows_user = '''
-insert into follows values (:follower, :followee, CURRENT_DATE)
 '''
 
 '''
