@@ -212,11 +212,28 @@ def search_user(cur):
     keyword = input("Please enter the name or city of the user you would like to search for: ")
     keyword = keyword.strip()
     cur.execute(queries.search_users_keyword, [keyword, keyword])
-    results = cur.fetchall()
-    for row in results:
-        print(*row)
+    
+    #This Handles 5 at a time showing
+    while True:
+        results = cur.fetchmany(numRows = 5)
+        for row in results:
+            print(*row)
+        if len(results) != 5:
+            print("There are no more results.")
+            break
+        choice = blanking_input("[Enter] = see more, [ID#] = view user, anything else cancels: ")
+        if choice == "":
+            continue
+        try:
+            choice = int(choice)
+        except:
+            pass
+        if type(choice) == int:
+            view_user(cur, choice)
+            break
+        print("Search ended")
+        break
         
-    #@TODO needs more functions
     pause_until_input()
     return
 
@@ -369,6 +386,7 @@ def edit_lists(con, cur, userID):
         
 
 def add_to_list(con, cur, userID):
+    '''
     cur.execute(queries.get_user_lists, [userID])
     lists = cur.fetchall()
     if lists == []:
@@ -403,6 +421,7 @@ def add_to_list(con, cur, userID):
                 print("This list doesn't exist. Did you misstype it?")
     else:
         print("This user doesn't exist.")
+    '''
     pause_until_input()
     return
 
@@ -439,3 +458,57 @@ def remove_from_list(con, cur, userID):
 
 def pause_until_input():
     input("Press Enter To Continue")
+    
+def blanking_input(prompt):
+    '''
+    Gets input using the specified prompt, then deletes the prompt
+    '''
+    instr = input(prompt)
+    print("\033[F", end = '') #clear away the input, this returns to previous line
+    print(len(prompt)*" ", end = '\r') #write over prompt with spaces, then return to start of line
+    return instr
+
+def view_user(cur, userID):
+    os.system(CLEAR_SCREEN)
+    cur.execute(queries.get_user_name, [userID])
+    name = cur.fetchone()
+    name = name[0]
+    print("Stats about " + name)
+    cur.execute(queries.get_user_tweet_count, [userID])
+    twt_cnt = cur.fetchone()
+    twt_cnt = twt_cnt[0]
+    print("Number of tweets: " + str(twt_cnt))
+    cur.execute(queries.get_user_follows_count, [userID])
+    flw_cnt = cur.fetchone()
+    flw_cnt = flw_cnt[0]
+    print("Number of people they follow: " + str(flw_cnt))
+    cur.execute(queries.get_user_follower_count, [userID])
+    flwe_cnt = cur.fetchone()
+    flwe_cnt = flwe_cnt[0]
+    print("Number of people who follow them: " + str(flwe_cnt))
+    cur.execute(queries.get_user_tweets, [userID])
+    first_time = True
+    while True:
+        results = cur.fetchmany(numRows = 3 if first_time else 5)
+        
+        for row in results:
+            print(*row)
+        
+        if len(results) == 0 and first_time:
+            print("This user has no tweets.")
+            break
+        if len(results) != 5:
+            print("This user has no more tweets.")
+            break
+        first_time = False
+        choice = blanking_input("[Enter] = see more, anything else returns to previous menu: ")
+        if choice == "":
+            continue
+        else:
+            print("Finished viewing")
+            break
+            
+    pause_until_input()
+    return
+    
+    
