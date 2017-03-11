@@ -3,11 +3,7 @@
 Given a keyword, return all tweets that mention the keyword in their text or in their list of hashtags
 define @keyword char[20]
 '''
-search_tweets_keyword = '''
-	select t.text as "Text"
-	from tweets t
-	where t.text like ('%' || :keyword || '%')
-	'''
+#This query needed to be built algorithmically, please see the code in functions.search_tweet()
 
 '''
 given a tweet id, return the number of retweets and number of replies.
@@ -25,6 +21,16 @@ select (    select count(t.replyto)
             where r.tid = :tweetId
         ) retweetCount
 from dual
+'''
+get_tweet_rtwts = '''
+select count(t.replyto)
+from tweets t
+where t.replyto = :tweetId
+'''
+get_tweet_reps = '''
+select count(r.tid)
+from retweets r
+where r.tid = :tweetId
 '''
 
 '''

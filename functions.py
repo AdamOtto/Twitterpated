@@ -144,7 +144,7 @@ def functions(con, cur, userID):
 
     while f_input:
         if f_input == "1":
-            search_tweet(cur)
+            search_tweet(con, cur, userID)
         elif f_input == "2":
             search_user(con, cur, userID)
         elif f_input == "3":
@@ -171,12 +171,104 @@ def functions(con, cur, userID):
 # prompts the user to enter a keyword to be searched for in tweets and prints
 #  ou the top 5 recent tweets and gives the user the option to select a tweet
 #  and get some stats about it or recieve the next 5 tweets.
-def search_tweet(cur):
+def search_tweet(con, cur, userID):
     os.system(CLEAR_SCREEN)
     keyword = input("Please enter the keyword(s) you would like to search. (If you"
                     " are entering more than one keyword, please seperate using"
                     " a ','): ")
     keyword = keyword.split(',')
+    #Algorithmically build a query that searches for keywords and hashtags
+    key_str = ""
+    hash_str = ""
+    key_list = []
+    hash_list = []
+    i = 0
+    for word in keyword:
+        i = i+1
+        if word[:1] != '#': #this method safely handles empty keywords
+            #keyword
+            if key_str == "": #first entry
+                key_str = key_str + "LOWER(t.text) like ('%' || LOWER(:" + str(i) + ") || '%')"
+            else:
+                key_str = key_str + " or LOWER(t.text) like ('%' || LOWER(:" + str(i) + ") || '%')"
+            key_list.append(word)
+        else:
+            #hashtag
+            if hash_str == "": #first entry
+                hash_str = hash_str + "replace(m.term, ' ', '') = :" + str(i)
+            else:
+                hash_str = hash_str + " or replace(m.term, ' ', '') = :" + str(i)
+            hash_list.append(word[1:]) #adds the word without the hash symbol
+    #now that the strings are built, build the total query and list of variables
+    terms_list = key_list + hash_list
+        
+    #this query uses distinct, because multiple hashtags in a tweet create duplicate entries, tid stops 
+    #this from clearing out retweets
+    query = """
+    select distinct t.tid, extract(month from t.tdate) as month, extract(day from t.tdate) as day, extract(year from t.tdate) as year, u.name, t.text, t.tdate
+    from tweets t, mentions m, users u
+    where m.tid = t.tid and t.writer = u.usr"""
+    
+    #Add the conditions based on if they need to exist or not
+    if key_str == "":
+        if hash_str == "":
+            pass
+        else:
+            query = query + " and (" + hash_str + ")"
+    else:
+        if hash_str == "":
+            query = query + " and (" + key_str + ")"
+        else:
+            query = query + " and ((" + key_str + ") or (" + hash_str + "))"
+    
+    query = query + " order by t.tdate desc"
+    
+    #@TODO for debug, remove me
+    #print(query)
+    #print(terms_list)
+    
+    cur.execute(query, terms_list)
+    '''
+    results = cur.fetchall()
+    print(results)
+    for row in results:
+        print(str(row[0]).ljust(3) + " " + str(row[1]).ljust(2) + " " + str(row[2]).ljust(2) + " " + str(row[3]).ljust(4) + " " + str(row[4]) + " " + str(row[5]))
+    '''
+    #This Handles 5 at a time showing
+    end = False
+    skip_print = False
+    while True:
+        if not skip_print:
+            results = cur.fetchmany(numRows = 5)
+            for row in results:
+                print(*row)
+        skip_print = False # this skip_print is for if you get an error in inputs later and need to continue the loop without advancing.
+        if len(results) != 5: #this is the end of the list, menu options need to change
+            print("There are no more results.")
+            choice = input("[Tweet ID#] = view tweet stats, anything else cancels: ")
+            end = True
+        if not end: choice = blanking_input("[Enter] = see more, [Tweet ID#] = view tweet stats, anything else cancels: ") #regular menu options
+        if choice == "" and not end:
+            continue
+        try:
+            choice = int(choice)
+        except:
+            print("A tweet ID must be a number")
+        if type(choice) == int:
+            cur2 = con.cursor()
+            cur2.execute("select * from tweets where tid = :id", [choice])
+            check_user_results = cur2.fetchone()
+            if check_user_results is None:
+                blanking_input("Sorry, but that tweet does not exist, enter to continue") #make a dissapearing error prompt
+                skip_print = True #We need to continue the loop, but not move the cursor
+                continue
+            view_tweet(con, cur, userID, choice)
+            return
+        print("Search ended")
+        break
+    
+    
+    '''
     for word in keyword:
         word = word.strip()
         #Check if we're searching a hashtag.
@@ -185,7 +277,7 @@ def search_tweet(cur):
         if word[:1] is '#':
             cur.execute("select t.text " + "from tweets t, mentions m " + 
                         "where m.tid = t.tid AND m.term = LOWER('"+ word[1:] +"') " +
-                        "order by t.tdate desc")
+                        "order by t.tdate desc", [])
         else:
             cur.execute("select text from " + 
                         "(select text, row_number() over (order by tdate desc) as row_num " + 
@@ -205,6 +297,7 @@ def search_tweet(cur):
                             "(select text, row_number(order by tdate descending) as row_num " + 
                             "from tweets where text like '%:word%') where row_num <= 5", (word))
                 # @TODO not finished
+    '''
     pause_until_input()
     return
 
@@ -543,4 +636,44 @@ def view_user(con, cur, userID, viewID):
     pause_until_input()
     return
     
+def view_tweet(con, cur, userID, tid):
+    '''
+    Shows stats about a selected tweet with tweet id tid. The option to reply to or retweet the tweet that is viewed
+    '''
+    os.system(CLEAR_SCREEN)
+    print("You are looking at the tweet with id # " + str(tid))
+    cur.execute("select t.tdate, u.name, t.text from users u, tweets t, where t.writer = u.usr and t.tid = :id", [tid])
+    stats = curs.fetchone()
+    print("\n\"" + stats[2] + "\"\n")
+    print("This tweet was written by: " + stats[1])
+    print("It was written on: " + str(stats[0]))
+    #get retweet count
+    cur.execute(queries.get_tweets_rtwts, [tid])
+    retweets = cur.fetchone()
+    retweets = retweets[0]
+    print("This tweet has been retweeted this many times: " + str(retweets))
+    #get reply count
+    cur.execute(queries.get_tweets_reps, [tid])
+    replies = cur.fetchone()
+    replies = replies[0]
+    print("This tweet has been replied to this many times: " + str(replies))
+    print("")
+    choice = get_valid_input(prompt = "1 = reply to this tweet, 2 = retweet this tweet, anything else = exit", valids = ['1', '2', '3'])
+    if choice == '1':
+        create_tweet(con, cur, userID, tid)
+    elif choice == '2':
+        retweet(con, cur, userID, tid)
+    return
+        
     
+    
+    
+    
+def retweet(con, cur, userID, tid):
+    '''
+    Retweets the tweet with tweet id tid under the user with user id userID.
+    '''
+    cur.execute(queries.create_retweet, [userID, tid])
+    cur.commit()
+    print("You have reweeted this tweet successfully")
+    return
