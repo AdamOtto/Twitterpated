@@ -212,25 +212,26 @@ def search_user(cur):
     keyword = input("Please enter the name or city of the user you would like to search for: ")
     keyword = keyword.strip()
     cur.execute(queries.search_users_keyword, [keyword, keyword])
-    
     #This Handles 5 at a time showing
+    end = False
     while True:
         results = cur.fetchmany(numRows = 5)
         for row in results:
             print(*row)
-        if len(results) != 5:
+        if len(results) != 5: #this is the end of the list, menu options need to change
             print("There are no more results.")
-            break
-        choice = blanking_input("[Enter] = see more, [ID#] = view user, anything else cancels: ")
-        if choice == "":
+            choice = input("[ID#] = view user, anything else cancels: ")
+            end = True
+        if not end: choice = blanking_input("[Enter] = see more, [ID#] = view user, anything else cancels: ") #regular menu options
+        if choice == "" and not end:
             continue
         try:
             choice = int(choice)
         except:
-            pass
+            print("Not a valid user ID")
         if type(choice) == int:
             view_user(cur, choice)
-            break
+            return
         print("Search ended")
         break
         
