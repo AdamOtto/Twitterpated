@@ -9,13 +9,13 @@ The user’s homepage is the main hub for interaction with Twitterpated.  The us
 When a user writes a tweet they are prompted to enter an 80 characters or less string.  The application will enforce this constraint and parse through the tweet to find any hashtags.  If a hashtag is found it is added to the database if it doesn’t already exist.  An associated mentions column is also created so the tweet can be found later when searching hashtags.
 Searching for tweets is done by prompting the user to input one or several keywords.  This keyword can either be a hashtag value or a word that appears in the text of the tweet.  The tweets found to match the keywords are displayed in intervals of 5.  The user can continue browsing the tweets or quit at any time.
 When searching for users a keyword identifying the user or this city they live in is used.  The returning results will first display the users that match the keyword in ascending order of name length.  The results matching the city will be displayed afterwards in a similar order.
-Viewing following users will display the ID and names of all following users.  The query is simple and doesn’t order the results in any meaningful way.
-The user is given three prompts when they want to manage their favourites list: create, view existing lists and see which lists other lists the user was added to.  A new list will require a name that isn’t being used by another user.  Viewing you existing lists will display the name of each list you own.  And viewing the lists you appear on will display the names of the lists you’re included in.
+Viewing following users will display the ID and names of all following users.  The user will then be prompted to enter one of the above user ID in order to see more information.  Entering a proper ID will fetch the users tweet count, following count and followers count.  3 recent tweet will also be displayed, with a prompt to see more tweets or follow the selected user.
+The user is given three prompts when they want to manage their favourites list: create, view existing lists and see which lists other lists the user was added to.  A new list will require a name that isn’t being used by another user.  Viewing you existing lists will display the name of each list you own.  And viewing the lists you appear on will display the names of the lists you’re included in.  Editing the lists allows the user to add or remove users from any list they own.  To add a user a valid user id must be entered followed by a valid list owned by the user.  If the entered ID already exists in the list then the process is aborted, otherwise the user is added into the list.  Removing from a list works similarily; a valid list and user ID must be entered, if the user ID is in the list then it is removed.
 Testing:
 The sql statements used for this project were tested separately using self created test data.  The results of the queries were used to determine if they were effective in returning the proper results.
 Group work strategy:
 Austin:
-Adam:
+Adam: Wrote out an initial set of sql queries that were used in the five tasks. Added functionality to adding and removing from lists, including new sql statments.  Added functionality to task 4: list followers,  allowing user to select a follower and listing their stats.  Wrote the initial draft of the design document. 
 Dylan:
 
 
