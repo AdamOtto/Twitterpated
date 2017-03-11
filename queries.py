@@ -56,16 +56,16 @@ define @keyword char[20]
 '''
 # @TODO remove namelength, citylength for production
 search_users_keyword = """
-	select NVL(u1.name, u2.name), NVL(u1.city, u2.city), namelength, citylength
+	select NVL(u1.usr, u2.usr), NVL(u1.name, u2.name), NVL(u1.city, u2.city), namelength, citylength
 	from
 	(
-	select u1.name, u1.city, rank() over (order by length(replace(u1.name, ' ', '')) asc) as namelength
+	select u1.usr, u1.name, u1.city, rank() over (order by length(replace(u1.name, ' ', '')) asc) as namelength
 	from users u1
 	where lower(u1.name) like ('%' || lower(:keyword) || '%')
 	) u1
 	full outer join
 	(
-	select u2.name, u2.city, rank() over (order by length(replace(u2.city, ' ', '')) asc) as citylength
+	select u2.usr, u2.name, u2.city, rank() over (order by length(replace(u2.city, ' ', '')) asc) as citylength
 	from users u2
 	where lower(u2.city) like ('%' || lower(:keyword) || '%')
 	) u2
@@ -100,7 +100,7 @@ given a user id, return the number of users following them
 define @usrId Integer
 '''
 get_user_follower_count = '''
-getselect count(*)
+select count(*)
 from follows
 where flwee = :usrId
 '''
@@ -115,6 +115,15 @@ select text
 from tweets
 where writer = :usrId
 order by tdate desc
+'''
+
+'''
+given a user id, return the user name
+'''
+get_user_name = '''
+select name
+from users u
+where u.usr = :usrID
 '''
 
 
