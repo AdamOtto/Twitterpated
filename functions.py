@@ -121,16 +121,30 @@ def home_page(con, cur, userID):
     advanced usage.
     '''
     
-    return
-    
     print("Welcome to Twitterpated! Here are all your followed users' tweets:")
-    # @TODO need to get both tweets and retweets, this query is bad
-    cur.execute("select tid, writer, usr, tdate, text, replyto " +
-                "from tweets t, users u " +
-                "where t1.writer = u1.usr " + 
-                "union " + 
-                "select tid, writer, usr, rdate, text " + 
-                "from retweets r join users u1 on r. users u2, ")
+    
+    query = ("select t.tid, t.text, t.tdate " +
+            "from tweets t, follows f " +
+            "where f.flwer = :ID and f.flwee = t.writer " +
+            "union " +
+            "select t.tid, t.text, t.tdate " + 
+            "from retweets r, follows f, tweets t " + 
+            "where f.flwer = :ID and f.flwee = r.usr and t.tid = r.tid " +
+            "order by tdate desc")
+            
+    cur.execute(query, {'ID':userID})
+    
+    more_tweets = "yes"
+    amount = 0
+    while more_tweets == 'yes':
+        tweet =  cur.fetchone()
+        amount += 1
+        if tweet == None:
+            break
+        print(tweet)
+        if amount % 5 == 0:
+            more_tweets = input("Would you like to receive the next 5 tweets" + 
+                                "? Enter yes or no: ")
 
 
 # Provides a menu for the functions of the program
