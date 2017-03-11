@@ -41,7 +41,7 @@ def get_valid_input(length = 20, valids = [], valids_description = None, prompt 
 # if login is specified gets the users id and password and checks to see if the user is
 #  in the table, returning 1 if they are 0 if they are not
 def login(cur):
-    userID = input("Please enter your user ID (Enter nothing to return to menu): ")
+    userID = input("Please enter your user ID (Enter nothing to return to menu): ").strip()
     if not userID:
         print("Returning to menu.")
         return(2, None, None)
@@ -146,7 +146,7 @@ def functions(con, cur, userID):
         if f_input == "1":
             search_tweet(cur)
         elif f_input == "2":
-            search_user(cur)
+            search_user(con, cur)
         elif f_input == "3":
             write_tweet(con, cur, userID)
         elif f_input == "4":
@@ -207,17 +207,20 @@ def search_tweet(cur):
     pause_until_input()
     return
 
-def search_user(cur):
+def search_user(con, cur):
     os.system(CLEAR_SCREEN)
     keyword = input("Please enter the name or city of the user you would like to search for: ")
     keyword = keyword.strip()
     cur.execute(queries.search_users_keyword, [keyword, keyword])
     #This Handles 5 at a time showing
     end = False
+    skip_print = False
     while True:
-        results = cur.fetchmany(numRows = 5)
-        for row in results:
-            print(*row)
+        if not skip_print:
+            results = cur.fetchmany(numRows = 5)
+            for row in results:
+                print(*row)
+        skip_print = False # this skip_print is for if you get an error in inputs later and need to continue the loop without advancing.
         if len(results) != 5: #this is the end of the list, menu options need to change
             print("There are no more results.")
             choice = input("[ID#] = view user, anything else cancels: ")
@@ -230,6 +233,13 @@ def search_user(cur):
         except:
             print("Not a valid user ID")
         if type(choice) == int:
+            cur2 = con.cursor()
+            cur2.execute("select * from users where usr = :id", [choice])
+            check_user_results = cur2.fetchone()
+            if check_user_results is None:
+                blanking_input("Sorry, but that user does not exist, enter to continue") #make a dissapearing error prompt
+                skip_print = True #We need to continue the loop, but not move the cursor
+                continue
             view_user(cur, choice)
             return
         print("Search ended")
@@ -498,7 +508,7 @@ def view_user(cur, userID):
         if len(results) == 0 and first_time:
             print("This user has no tweets.")
             break
-        if len(results) != 5:
+        if (len(results) < 5 and not first_time) or (first_time and len(results) < 3):
             print("This user has no more tweets.")
             break
         first_time = False

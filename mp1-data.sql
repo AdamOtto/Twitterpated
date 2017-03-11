@@ -38,7 +38,7 @@ insert into tweets values (16,7,'15-DEC-2016','Can''t stump the #trump! #america
 insert into hashtags values ('edmonton');
 --new
 insert into hashtags values ('trump');
-insert into hashtags values ('rosesRed');
+insert into hashtags values ('rosesRred');
 insert into hashtags values ('america');
 
 

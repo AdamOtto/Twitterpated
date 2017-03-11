@@ -56,7 +56,7 @@ define @keyword char[20]
 '''
 # @TODO remove namelength, citylength for production
 search_users_keyword = """
-	select NVL(u1.usr, u2.usr), NVL(u1.name, u2.name), NVL(u1.city, u2.city), namelength, citylength
+	select NVL(u1.usr, u2.usr), NVL(u1.name, u2.name), NVL(u1.city, u2.city)
 	from
 	(
 	select u1.usr, u1.name, u1.city, rank() over (order by length(replace(u1.name, ' ', '')) asc) as namelength
