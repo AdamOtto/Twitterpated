@@ -1,21 +1,32 @@
 Overview:
 Twitterpated is an application that allows users to create and share short messages called "tweets".  The user is able to follow other users and to see all their tweets and reply to them, allowing them to share ideas, news and opinions.  Users can also share tweets so all their followers can see the shared tweet. Tweets can also contain hashtags.  Hashtags are used for searching and to associate a tweet with a certain topic.  Lastly, users can create a list of their favourite users to keep track of.
+
 Design:
-The implementation of Twitterpated is done in python using cx_oracle to connect to the database.  Queries used were either hardcoded into the pyton files or in a separate sql file that could be accessed by our program.
- To use Twitterpated, the user can open the application by using a command terminal to compile and run the python file “main”.  Here the user will have three options: register, login or exit.
-Registering will create an account used to interact with Twitterpated.  The user will be prompted to enter: their name, e-mail, city, time-zone and a four digit password.  Creating an account will generate a user ID that is used to identify the account and for logging in later.  Once registered, the user will be automatically logged in with the new account.  
+The implementation of Twitterpated is done in python using cx_oracle to connect to the database.  Queries used were either hardcoded into the python files or in a separate sql file that could be accessed by our program.
+
+To use Twitterpated, the user can open the application by using a command terminal to compile and run the python file “main”.  Here the user will have three options: register, login or exit.
+
+Registering will create an account used to interact with Twitterpated.  The user will be prompted to enter: their name, e-mail, city, time-zone and a four digit password.  Creating an account will generate a user ID that is used to identify the account and for logging in later.  Once registered, the user will need to log in with their new account. 
+ 
 Logging in will allow a user to access an already existing account.  A user can log in by inputting their user ID and password.  If the entered ID and password match what was created on registering, then the user is brought to their homepage.  Otherwise the user can try again to log in, or enter nothing to quit back to the main menu.
-The user’s homepage is the main hub for interaction with Twitterpated.  The user can search for other users and tweets, manage their favourite lists, view their followers, write tweets and log out.  The homepage also displays the most recent tweets of followed users in intervals of 5.
+
+The user’s homepage is the main hub for interaction with Twitterpated.  The user can search for other users and tweets, manage their favourite lists, view their followers, write tweets, and log out.  The homepage also displays the most recent tweets of followed users in intervals of 5, with the ability to see stats about a tweet, write a reply to it or retweet it.
+
 When a user writes a tweet they are prompted to enter an 80 characters or less string.  The application will enforce this constraint and parse through the tweet to find any hashtags.  If a hashtag is found it is added to the database if it doesn’t already exist.  An associated mentions column is also created so the tweet can be found later when searching hashtags.
-Searching for tweets is done by prompting the user to input one or several keywords.  This keyword can either be a hashtag value or a word that appears in the text of the tweet.  The tweets found to match the keywords are displayed in intervals of 5.  The user can continue browsing the tweets or quit at any time.
+
+Searching for tweets is done by prompting the user to input one or several keywords.  This keyword can either be a hashtag value or a word that appears in the text of the tweet.  The tweets found to match the keywords are displayed in intervals of 5. You can then get some stats about a tweet, write a reply, or retweet it.
+
 When searching for users a keyword identifying the user or this city they live in is used.  The returning results will first display the users that match the keyword in ascending order of name length.  The results matching the city will be displayed afterwards in a similar order.
 Viewing following users will display the ID and names of all following users.  The user will then be prompted to enter one of the above user ID in order to see more information.  Entering a proper ID will fetch the users tweet count, following count and followers count.  3 recent tweet will also be displayed, with a prompt to see more tweets or follow the selected user.
 The user is given three prompts when they want to manage their favourites list: create, view existing lists and see which lists other lists the user was added to.  A new list will require a name that isn’t being used by another user.  Viewing you existing lists will display the name of each list you own.  And viewing the lists you appear on will display the names of the lists you’re included in.  Editing the lists allows the user to add or remove users from any list they own.  To add a user a valid user id must be entered followed by a valid list owned by the user.  If the entered ID already exists in the list then the process is aborted, otherwise the user is added into the list.  Removing from a list works similarily; a valid list and user ID must be entered, if the user ID is in the list then it is removed.
 Testing:
-The sql statements used for this project were tested separately using self created test data.  The results of the queries were used to determine if they were effective in returning the proper results.
+The sql statements used for this project were tested separately using self-created test data.  The results of the queries were used to determine if they were effective in returning the proper results. 
+
+For testing the functions we had used our own methods of testing, normally just by adding in print statements at certain points in functions to see what the values of variables would be, or checking the output to see if the function worked as expected. We tried to cover as many possibilities as possible when testing our data to find bugs and errors. Also when testing we made any search functions case insensitive, making it easier for users to use.
+
 Group work strategy:
+For the project we had worked on some functions together and on our own. Initially the login and registering part was worked on by everyone as they had time. Later on, we had picked a function and worked on them separately, writing the code and testing to make sure they performed what they needed to do. Whenever a function had repeated a secondary function that could be used again we tried to use previous code to limit the amount of work.
+
 Austin:
-Adam: Wrote out an initial set of sql queries that were used in the five tasks. Added functionality to adding and removing from lists, including new sql statments.  Added functionality to task 4: list followers,  allowing user to select a follower and listing their stats.  Wrote the initial draft of the design document. 
-Dylan:
-
-
+Adam: Wrote out an initial set of sql queries that were used in the five tasks. Added functionality to adding and removing from lists, including new sql statments.  Added functionality to task 4: list followers,  allowing user to select a follower and listing their stats.  Wrote the initial draft of the design document. Time spent: 15hrs
+Dylan: Worked on; functions, login, register, home page, write tweet, search tweet. Time spent: 20hrs
