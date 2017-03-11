@@ -88,14 +88,31 @@ def login(cur):
 # if register is specified prompts the user for all the information to create a user in the table
 def register(cur):
     os.system(CLEAR_SCREEN)
-    name = input("Enter your name: ")
-    email = input("Enter your email: ")
-    city = input("Enter the city you live in: ")
-    timezone = input("Enter your timezone: ")
-    #timezone = float(timezone)
-    pswd = input("Enter your password: ")
-    # @TODO need to add error checking to all of these to make sure correct information is entered
-    #  and maybe a better prompt to specify conditions; maybe use the getValidInput function?
+    name = input("Enter your name (Max 20 chars): ")
+    if len(name) > 20:
+        print("Your name is too long to add to the system, please try again")
+        return 0
+    
+    email = input("Enter your email (Max 15 chars): ")
+    if len(email) > 15:
+        print("Your email is too long to add to the system, please try again.")
+        return 0
+    
+    city = input("Enter the city you live in (Max 12 chars): ")
+    if len(city) > 12:
+        print("Your city name is too long to add to the system, please try again.")
+        return 0
+ 
+    timezone = input("Enter your timezone (Float or Int): ")
+    if not isinstance(timezone,(float,int)):
+        print("Timezone needs to be an integer or a float, please try again.")
+        return 0
+
+    pswd = input("Enter your password (Max 4 chars): ")
+    if len(pswd) > 4:
+        print("Your password is too long, please try again")
+        return 0
+
 
     cur.execute("select NVL(max(usr),-1) from users")
     user = cur.fetchall()
@@ -121,16 +138,30 @@ def home_page(con, cur, userID):
     advanced usage.
     '''
     
-    return
-    
     print("Welcome to Twitterpated! Here are all your followed users' tweets:")
-    # @TODO need to get both tweets and retweets, this query is bad
-    cur.execute("select tid, writer, usr, tdate, text, replyto " +
-                "from tweets t, users u " +
-                "where t1.writer = u1.usr " + 
-                "union " + 
-                "select tid, writer, usr, rdate, text " + 
-                "from retweets r join users u1 on r. users u2, ")
+    
+    query = ("select t.tid, t.text, t.tdate " +
+            "from tweets t, follows f " +
+            "where f.flwer = :ID and f.flwee = t.writer " +
+            "union " +
+            "select t.tid, t.text, t.tdate " + 
+            "from retweets r, follows f, tweets t " + 
+            "where f.flwer = :ID and f.flwee = r.usr and t.tid = r.tid " +
+            "order by tdate desc")
+            
+    cur.execute(query, {'ID':userID})
+    
+    more_tweets = "yes"
+    amount = 0
+    while more_tweets == 'yes':
+        tweet =  cur.fetchone()
+        amount += 1
+        if tweet == None:
+            break
+        print(tweet)
+        if amount % 5 == 0:
+            more_tweets = input("Would you like to receive the next 5 tweets" + 
+                                "? Enter yes or no: ")
 
 
 # Provides a menu for the functions of the program
@@ -148,9 +179,9 @@ def functions(con, cur, userID):
         elif f_input == "2":
             search_user(con, cur, userID)
         elif f_input == "3":
-            write_tweet(con, cur, userID)
+            write_tweet(con, cur, userID, None)
         elif f_input == "4":
-            list_followers(cur, userID)
+            list_followers(con, cur, userID)
         elif f_input == "5":
             manage_lists(con, cur, userID)
         elif f_input == "6":
@@ -346,7 +377,7 @@ def search_user(con, cur, userID):
 #Gets the user to input a tweet, checks if less than 80 charcters, then adds tweet
 # finds where the # are and gets the words, adding them to mentions and then checking
 # if it is already in hashtags and if not adding into it.
-def write_tweet(con, cur, userID):
+def write_tweet(con, cur, userID, reply):
     os.system(CLEAR_SCREEN)
     t_text = input("Enter your tweet(Max 80 character): ")
     
@@ -359,49 +390,76 @@ def write_tweet(con, cur, userID):
     tweetID = int(tweetID[0][0])
     tweetID += 1 
     
-    print(tweetID)
+    print("tweet ID", tweetID)
     
-    query = "insert into tweets values (:t, :wrt, SYSDATE, :txt, null)"
-    cur.execute(query,{'t':tweetID, 'wrt':userID, 'txt':t_text})
-    print("done")
+    query = "insert into tweets values (:t, :wrt, SYSDATE, :txt, :rep)"
+    cur.execute(query,{'t':tweetID, 'wrt':userID, 'txt':t_text, 'rep':reply})
     con.commit()
 
     
     print ([pos for pos, char in enumerate(t_text) if char == '#'])
     index_hash = ([pos for pos, char in enumerate(t_text) if char == '#'])
+    print (index_hash)
     for index in index_hash:
-        end_index = index
+        end_index = index + 1
         while t_text[end_index].isalpha():
             end_index += 1
-            
-        hash_tag = t_text[index+1:end_index]
-        print(hash_tag)
-        # might need to check if hashtag is less than 10 characters
-                
-        query = "insert into mentions values(:t, :ht)"
-        cur.execute(query, {'t':tweetID, 'ht':hash_tag})
+            if end_index >= len(t_text):
+                break
         
-        query = "select * from hashtags where term = :ht"
-        cur.execute(query, {'ht',hash_tag})
-        trm = cur.fetchall()
-        if not trm:
-            query = "insert into hashtags value(:h_tag)"
-            cur.execute(query, {'h_tag':hash_tag})           
-             
-    con.commit
+        hash_tag = t_text[index+1:end_index]
+        
+        if len(hash_tag) <= 10 and len(hash_tag) > 0:
+            cur.execute("select * from hashtags where term = '" + hash_tag + "'")
+            trm = cur.fetchone()
+            
+            if not trm:
+                query = "insert into hashtags values (:h_tag)"
+                cur.execute(query, {'h_tag':hash_tag})  
+                con.commit()
+                    
+            query = "insert into mentions values (:t, :ht)"
+            cur.execute(query, {'t':tweetID, 'ht':hash_tag}) 
+            con.commit()
+        
+        else:
+            print("The hashtag from the tweet was too long to be entered,"
+                  "but the tweet was inserted.")
+                 
     pause_until_input()
     return
 
-def list_followers(cur, userID):
+def list_followers(con, cur, userID):
     os.system(CLEAR_SCREEN)
+    #cur.execute("select u.usr, u.name from users u, follows f WHERE f.flwer = u.usr AND f.flwee = " + str(userID))
     cur.execute(queries.get_users_followers, [userID])
     followers = cur.fetchall()
     if followers != []:
         for row in followers:
             print(*row)
+        Search = True
+        while(Search):
+            uID = input("Enter a users ID to see more (leave blank to exit): ")
+            if(uID == ''):
+                break
+            for row in followers:
+                if( uID == str(row[0]) ):
+                    list_followers_see_more_information(con, cur, userID, uID)
+                    Search = False
+                    break
     else:
         print("You do not seem to have anybody following you... maybe write some tweets?")
-    pause_until_input()
+    return
+
+def list_followers_see_more_information(con, cur, userID, uID):
+    os.system(CLEAR_SCREEN)
+    #Get the data of the selected user.
+    cur.execute(queries.get_following_users_data, [uID])
+    follower_tweet_count = cur.fetchall()
+    print("This user has written " + str(follower_tweet_count[0][0]) + " tweets.")
+    print("This user is following " + str(follower_tweet_count[0][1]) + " other user(s).")
+    print("This user has " + str(follower_tweet_count[0][2]) + " follower(s).\n")
+    view_user(con, cur, userID, uID)
     return
 
 def manage_lists(con, cur, userID):
@@ -481,7 +539,7 @@ def edit_lists(con, cur, userID):
         if f_input == "1":
             add_to_list(con, cur, userID)
         elif f_input == "2":
-            remove_from_list(cur, userID)
+            remove_from_list(con, cur, userID)
         elif f_input == "3":
             return
         os.system(CLEAR_SCREEN)
@@ -491,7 +549,7 @@ def edit_lists(con, cur, userID):
         
 
 def add_to_list(con, cur, userID):
-    '''
+    
     cur.execute(queries.get_user_lists, [userID])
     lists = cur.fetchall()
     if lists == []:
@@ -526,7 +584,7 @@ def add_to_list(con, cur, userID):
                 print("This list doesn't exist. Did you misstype it?")
     else:
         print("This user doesn't exist.")
-    '''
+    
     pause_until_input()
     return
 
@@ -537,7 +595,6 @@ def remove_from_list(con, cur, userID):
         print("You do not have any lists. You should go make one!")
         pause_until_input()
         return
-
 
     lname = get_valid_input(length = 12, prompt = "Which list would you like to remove from? (Enter nothing to cancel): ")
     if lname:
