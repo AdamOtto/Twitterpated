@@ -164,7 +164,7 @@ def functions(con, cur, userID):
         elif f_input == "3":
             write_tweet(con, cur, userID)
         elif f_input == "4":
-            list_followers(cur, userID)
+            list_followers(con, cur, userID)
         elif f_input == "5":
             manage_lists(con, cur, userID)
         elif f_input == "6":
@@ -313,16 +313,37 @@ def write_tweet(con, cur, userID):
     pause_until_input()
     return
 
-def list_followers(cur, userID):
+def list_followers(con, cur, userID):
     os.system(CLEAR_SCREEN)
+    #cur.execute("select u.usr, u.name from users u, follows f WHERE f.flwer = u.usr AND f.flwee = " + str(userID))
     cur.execute(queries.get_users_followers, [userID])
     followers = cur.fetchall()
     if followers != []:
         for row in followers:
             print(*row)
+        Search = True
+        while(Search):
+            uID = input("Enter a users ID to see more (leave blank to exit): ")
+            if(uID == ''):
+                break
+            for row in followers:
+                if( uID == str(row[0]) ):
+                    list_followers_see_more_information(con, cur, userID, uID)
+                    Search = False
+                    break
     else:
         print("You do not seem to have anybody following you... maybe write some tweets?")
-    pause_until_input()
+    return
+
+def list_followers_see_more_information(con, cur, userID, uID):
+    os.system(CLEAR_SCREEN)
+    #Get the data of the selected user.
+    cur.execute(queries.get_following_users_data, [uID])
+    follower_tweet_count = cur.fetchall()
+    print("This user has written " + str(follower_tweet_count[0][0]) + " tweets.")
+    print("This user is following " + str(follower_tweet_count[0][1]) + " other user(s).")
+    print("This user has " + str(follower_tweet_count[0][2]) + " follower(s).\n")
+    view_user(con, cur, userID, uID)
     return
 
 def manage_lists(con, cur, userID):
@@ -402,7 +423,7 @@ def edit_lists(con, cur, userID):
         if f_input == "1":
             add_to_list(con, cur, userID)
         elif f_input == "2":
-            remove_from_list(cur, userID)
+            remove_from_list(con, cur, userID)
         elif f_input == "3":
             return
         os.system(CLEAR_SCREEN)
@@ -412,7 +433,7 @@ def edit_lists(con, cur, userID):
         
 
 def add_to_list(con, cur, userID):
-    '''
+    
     cur.execute(queries.get_user_lists, [userID])
     lists = cur.fetchall()
     if lists == []:
@@ -447,7 +468,7 @@ def add_to_list(con, cur, userID):
                 print("This list doesn't exist. Did you misstype it?")
     else:
         print("This user doesn't exist.")
-    '''
+    
     pause_until_input()
     return
 
@@ -458,7 +479,6 @@ def remove_from_list(con, cur, userID):
         print("You do not have any lists. You should go make one!")
         pause_until_input()
         return
-
 
     lname = get_valid_input(length = 12, prompt = "Which list would you like to remove from? (Enter nothing to cancel): ")
     if lname:

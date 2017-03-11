@@ -167,6 +167,20 @@ from follows, users
 where flwee = :usrId and flwer = usr
 '''
 
+get_following_users_data = '''
+select *
+from 
+(
+select count(*)"tweets Count" from tweets where writer = :usrId
+),
+(
+select count(*)"Following Count" from follows where flwer = :usrId
+),
+(
+select count(*)"Followers Count" from follows where flwee = :usrId
+)
+'''
+
 '''
 the same queries for user stats as in 2
 '''
