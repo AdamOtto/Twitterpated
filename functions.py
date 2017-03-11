@@ -175,13 +175,21 @@ def search_tweet(cur):
     keyword = input("Please enter the keyword(s) you would like to search. (If you"
                     " are entering more than one keyword, please seperate using"
                     " a ','): ")
-
-    keyword.split(',')
+    keyword = keyword.split(',')
     for word in keyword:
         word = word.strip()
-        cur.execute("select text from " + 
-                    "(select text, row_number() over (order by tdate desc) as row_num " + 
-                    "from tweets where text like ('%' || :word || '%')) where row_num <= 5", (word))
+        #Check if we're searching a hashtag.
+        #word[:1] = first character
+        #word[1:] = everything except first character.
+        if word[:1] is '#':
+            cur.execute("select t.text " + "from tweets t, mentions m " + 
+                        "where m.tid = t.tid AND m.term = LOWER('"+ word[1:] +"') " +
+                        "order by t.tdate desc")
+        else:
+            cur.execute("select text from " + 
+                        "(select text, row_number() over (order by tdate desc) as row_num " + 
+                        "from tweets where text like ('%' || '"+ word +"' || '%')) where row_num <= 5")
+
         tweets = cur.fetchall()
         index = 1
         for tweet in tweets:
@@ -351,7 +359,7 @@ def edit_lists(con, cur, userID):
         if f_input == "1":
             add_to_list(con, cur, userID)
         elif f_input == "2":
-            remove_from_list(con, cur, userID)
+            remove_from_list(cur, userID)
         elif f_input == "3":
             return
         os.system(CLEAR_SCREEN)
