@@ -88,14 +88,31 @@ def login(cur):
 # if register is specified prompts the user for all the information to create a user in the table
 def register(cur):
     os.system(CLEAR_SCREEN)
-    name = input("Enter your name: ")
-    email = input("Enter your email: ")
-    city = input("Enter the city you live in: ")
-    timezone = input("Enter your timezone: ")
-    #timezone = float(timezone)
-    pswd = input("Enter your password: ")
-    # @TODO need to add error checking to all of these to make sure correct information is entered
-    #  and maybe a better prompt to specify conditions; maybe use the getValidInput function?
+    name = input("Enter your name (Max 20 chars): ")
+    if len(name) > 20:
+        print("Your name is too long to add to the system, please try again")
+        return 0
+    
+    email = input("Enter your email (Max 15 chars): ")
+    if len(email) > 15:
+        print("Your email is too long to add to the system, please try again.")
+        return 0
+    
+    city = input("Enter the city you live in (Max 12 chars): ")
+    if len(city) > 12:
+        print("Your city name is too long to add to the system, please try again.")
+        return 0
+ 
+    timezone = input("Enter your timezone (Float or Int): ")
+    if not isinstance(timezone,(float,int)):
+        print("Timezone needs to be an integer or a float, please try again.")
+        return 0
+
+    pswd = input("Enter your password (Max 4 chars): ")
+    if len(pswd) > 4:
+        print("Your password is too long, please try again")
+        return 0
+
 
     cur.execute("select NVL(max(usr),-1) from users")
     user = cur.fetchall()
@@ -162,7 +179,7 @@ def functions(con, cur, userID):
         elif f_input == "2":
             search_user(con, cur, userID)
         elif f_input == "3":
-            write_tweet(con, cur, userID)
+            write_tweet(con, cur, userID, None)
         elif f_input == "4":
             list_followers(con, cur, userID)
         elif f_input == "5":
@@ -267,7 +284,7 @@ def search_user(con, cur, userID):
 #Gets the user to input a tweet, checks if less than 80 charcters, then adds tweet
 # finds where the # are and gets the words, adding them to mentions and then checking
 # if it is already in hashtags and if not adding into it.
-def write_tweet(con, cur, userID):
+def write_tweet(con, cur, userID, reply):
     os.system(CLEAR_SCREEN)
     t_text = input("Enter your tweet(Max 80 character): ")
     
@@ -280,36 +297,42 @@ def write_tweet(con, cur, userID):
     tweetID = int(tweetID[0][0])
     tweetID += 1 
     
-    print(tweetID)
+    print("tweet ID", tweetID)
     
-    query = "insert into tweets values (:t, :wrt, SYSDATE, :txt, null)"
-    cur.execute(query,{'t':tweetID, 'wrt':userID, 'txt':t_text})
-    print("done")
+    query = "insert into tweets values (:t, :wrt, SYSDATE, :txt, :rep)"
+    cur.execute(query,{'t':tweetID, 'wrt':userID, 'txt':t_text, 'rep':reply})
     con.commit()
 
     
     print ([pos for pos, char in enumerate(t_text) if char == '#'])
     index_hash = ([pos for pos, char in enumerate(t_text) if char == '#'])
+    print (index_hash)
     for index in index_hash:
-        end_index = index
+        end_index = index + 1
         while t_text[end_index].isalpha():
             end_index += 1
-            
-        hash_tag = t_text[index+1:end_index]
-        print(hash_tag)
-        # might need to check if hashtag is less than 10 characters
-                
-        query = "insert into mentions values(:t, :ht)"
-        cur.execute(query, {'t':tweetID, 'ht':hash_tag})
+            if end_index >= len(t_text):
+                break
         
-        query = "select * from hashtags where term = :ht"
-        cur.execute(query, {'ht',hash_tag})
-        trm = cur.fetchall()
-        if not trm:
-            query = "insert into hashtags value(:h_tag)"
-            cur.execute(query, {'h_tag':hash_tag})           
-             
-    con.commit
+        hash_tag = t_text[index+1:end_index]
+        
+        if len(hash_tag) <= 10 and len(hash_tag) > 0:
+            cur.execute("select * from hashtags where term = '" + hash_tag + "'")
+            trm = cur.fetchone()
+            
+            if not trm:
+                query = "insert into hashtags values (:h_tag)"
+                cur.execute(query, {'h_tag':hash_tag})  
+                con.commit()
+                    
+            query = "insert into mentions values (:t, :ht)"
+            cur.execute(query, {'t':tweetID, 'ht':hash_tag}) 
+            con.commit()
+        
+        else:
+            print("The hashtag from the tweet was too long to be entered,"
+                  "but the tweet was inserted.")
+                 
     pause_until_input()
     return
 
