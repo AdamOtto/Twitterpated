@@ -368,7 +368,7 @@ def edit_lists(con, cur, userID):
         if f_input == "1":
             add_to_list(con, cur, userID)
         elif f_input == "2":
-            remove_from_list(cur, userID)
+            remove_from_list(con, cur, userID)
         elif f_input == "3":
             return
         os.system(CLEAR_SCREEN)
@@ -388,24 +388,63 @@ def add_to_list(con, cur, userID):
 
 
     uID = input("Please Enter the user ID you would like to add: ")
+    #Test if the user exists
     cur.execute(queries.does_user_exist, [uID])
     lists = cur.fetchall()
-    if lists != []:
-        
+    if lists != []:        
         lname = get_valid_input(length = 12, prompt = "Which list would you like to add this user to? (Enter nothing to cancel): ")
         if lname:
-            #cur.execute(queries.see_if_list_exists, [lname, uID])
-            
-            #cur.execute(queries.add_member_to_list, [lname, uID])
-            #con.commit()
-            #print("Successfully added " + uID + " to list " + lname + ".")
+            #Test if the list exists and belongs to user.
+            #TODO: figure out why cur.execute doesn't like lname as an argument.
+            cur.execute("select * from lists where lname = '" + lname +  "' AND owner = " + str(userID))
+            lists = cur.fetchall()
+            if lists != []:
+                #Test if the user is already in the list.
+                cur.execute("select * from includes where lname = '" + lname +  "' AND member = " + str(uID))
+                lists = cur.fetchall()
+                if lists == []:
+                    #Update the list with the new user.
+                    cur.execute("insert into includes values ('" + lname + "', " + str(uID) + ")")
+                    con.commit()
+                    print("Successfully added " + uID + " to list " + lname + ".")
+                else:
+                    print("This user is already in this list!!!");
+            else:
+                print("This list doesn't exist. Did you misstype it?")
     else:
         print("This user doesn't exist.")
     '''
     pause_until_input()
     return
 
-def remove_from_list(cur, userID):
+def remove_from_list(con, cur, userID):
+    cur.execute(queries.get_user_lists, [userID])
+    lists = cur.fetchall()
+    if lists == []:
+        print("You do not have any lists. You should go make one!")
+        pause_until_input()
+        return
+
+
+    lname = get_valid_input(length = 12, prompt = "Which list would you like to remove from? (Enter nothing to cancel): ")
+    if lname:
+        #Test if list exists and belongs to user
+        cur.execute("select * from lists where lname = '" + lname +  "' AND owner = " + str(userID))
+        lists = cur.fetchall()
+        if lists != []:
+            uID = input("Please Enter the user ID you would like to remove: ")
+            #Test if the user exists in the list
+            cur.execute("select * from includes where lname = '" + lname +  "' AND member = " + str(uID))
+            lists = cur.fetchall()
+            if lists != []:
+                 #Remove the user from the list
+                 cur.execute("DELETE FROM includes where lname = '" + lname + "' AND member = " + str(uID))
+                 con.commit()
+                 print("Successfully removed " + uID + " from list " + lname + ".")
+            else:
+                print("This user is not in this list")                
+        else:
+            print("This list doesn't exist. Did you misstype it?")
     pause_until_input()
     return
 

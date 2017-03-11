@@ -198,7 +198,7 @@ where member = :usrId
 given a string, see if there is a list with that exact name
 '''
 see_if_list_exists = '''
-select lname
+select *
 from lists
 where lists.lname = :testname
 '''
@@ -233,8 +233,9 @@ AND member = :userId;
 '''
 
 '''
-Check to see if a user exists.  We dont want someone to add
+Check to see if a user exists.  We don't want someone to add
 a user that doesn't exist to their lists.
+define @userId Integer
 '''
 does_user_exist = '''
 select u.usr
@@ -242,7 +243,21 @@ from users u
 where u.usr = :userId
 '''
 
+'''
+Determine if a list belongs to a user.  We don't want one
+user editing the list of another.
+'''
+check_if_list_belongs_to_user = '''
+select *
+from lists
+where lname = :listName
+AND owner = :userId
+'''
 
+'''
+Adds a new user to a list
+define @listName char[12], @userId Integer
+'''
 add_member_to_list = '''
 insert into includes values (:listName, :userId);
 '''
