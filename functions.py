@@ -280,36 +280,42 @@ def write_tweet(con, cur, userID):
     tweetID = int(tweetID[0][0])
     tweetID += 1 
     
-    print(tweetID)
+    print("tweet ID", tweetID)
     
     query = "insert into tweets values (:t, :wrt, SYSDATE, :txt, null)"
     cur.execute(query,{'t':tweetID, 'wrt':userID, 'txt':t_text})
-    print("done")
     con.commit()
 
     
     print ([pos for pos, char in enumerate(t_text) if char == '#'])
     index_hash = ([pos for pos, char in enumerate(t_text) if char == '#'])
+    print (index_hash)
     for index in index_hash:
-        end_index = index
+        end_index = index + 1
         while t_text[end_index].isalpha():
             end_index += 1
-            
-        hash_tag = t_text[index+1:end_index]
-        print(hash_tag)
-        # might need to check if hashtag is less than 10 characters
-                
-        query = "insert into mentions values(:t, :ht)"
-        cur.execute(query, {'t':tweetID, 'ht':hash_tag})
+            if end_index >= len(t_text):
+                break
         
-        query = "select * from hashtags where term = :ht"
-        cur.execute(query, {'ht',hash_tag})
-        trm = cur.fetchall()
-        if not trm:
-            query = "insert into hashtags value(:h_tag)"
-            cur.execute(query, {'h_tag':hash_tag})           
-             
-    con.commit
+        hash_tag = t_text[index+1:end_index]
+        
+        if len(hash_tag) <= 10 and len(hash_tag) > 0:
+            cur.execute("select * from hashtags where term = '" + hash_tag + "'")
+            trm = cur.fetchone()
+            
+            if not trm:
+                query = "insert into hashtags values (:h_tag)"
+                cur.execute(query, {'h_tag':hash_tag})  
+                con.commit()
+                    
+            query = "insert into mentions values (:t, :ht)"
+            cur.execute(query, {'t':tweetID, 'ht':hash_tag}) 
+            con.commit()
+        
+        else:
+            print("The hashtag from the tweet was too long to be entered,"
+                  "but the tweet was inserted.")
+                 
     pause_until_input()
     return
 
