@@ -45,7 +45,7 @@ while state != EXIT:
             while user_login[0] == LOGGED_IN:
                 home_page(con, cur, user_login[1], user_login[2])
                 functions(con, cur, user_login[1], user_login[2])
-                state = EXIT
+                state = WELCOME
                 break
              
         elif user_login[0] == 2:
