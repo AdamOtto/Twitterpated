@@ -144,7 +144,7 @@ def home_page(con, cur, userID, username):
             "from tweets t, follows f " +
             "where f.flwer = :ID and f.flwee = t.writer " +
             "union " +
-            "select t.tid, t.text, t.tdate " + 
+            "select t.tid, t.text, r.rdate " + 
             "from retweets r, follows f, tweets t " + 
             "where f.flwer = :ID and f.flwee = r.usr and t.tid = r.tid " +
             "order by tdate desc")
