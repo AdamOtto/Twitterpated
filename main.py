@@ -1,7 +1,10 @@
 import cx_Oracle
 import pdb #debugger library
 from functions import *
-con = cx_Oracle.connect("crapo","3sidedpolygon","gwynne.cs.ualberta.ca:1521/CRS")
+
+uname = input("Please enter oracle username: ")
+pswd = input("Please enter oracle password: ")
+con = cx_Oracle.connect(uname,pswd,"localhost:1525/CRS")
 cur = con.cursor()
 
 #State machine constants
