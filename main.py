@@ -43,8 +43,8 @@ while state != EXIT:
             user_login = login(cur)
         if user_login[0] == 1:
             while user_login[0] == LOGGED_IN:
-                home_page(con, cur, user_login[1])
-                functions(con, cur, user_login[1])
+                home_page(con, cur, user_login[1], user_login[2])
+                functions(con, cur, user_login[1], user_login[2])
                 state = EXIT
                 break
              

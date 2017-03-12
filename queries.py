@@ -22,12 +22,12 @@ select (    select count(t.replyto)
         ) retweetCount
 from dual
 '''
-get_tweet_rtwts = '''
+get_tweet_reps = '''
 select count(t.replyto)
 from tweets t
 where t.replyto = :tweetId
 '''
-get_tweet_reps = '''
+get_tweet_rtwts = '''
 select count(r.tid)
 from retweets r
 where r.tid = :tweetId
