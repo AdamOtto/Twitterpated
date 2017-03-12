@@ -54,7 +54,6 @@ def login(cur):
         print("Your user ID needs to be number.")
         return (0, None, None)
     
-  #  print(user_info)
     if user_info:
         pswd = input("Please enter your password: ")
         pswd.rstrip('\n')
@@ -67,22 +66,6 @@ def login(cur):
     else:
         print("That username does not exist in the system, please try again.")
         return (0, None, None)  
-    
-  #  type(userID)
-  #  type(pswd)
-  #  print("UserID:" + userID + "Password:" + pswd + ".")
-   # inputarr = [int(userID), pswd.ljust(4)] #password must be padded or it will not match
-   # cur.execute("select name from users where usr = :1 and pwd = :2", (int(userID), pswd))
-
-  # name = cur.fetchall()
-  #  print(name)
-    #name = name[0][0]
-  #  if name:
- #       print("Successfully logged in as: ", name, "!")
-  #      return (1, int(userID), name) 
-  # else:
-   #     print("Incorrect username or password, please try again.")
-  #      return (0, None, None)
     
 
 # if register is specified prompts the user for all the information to create a user in the table
@@ -118,8 +101,6 @@ def register(cur):
     user = cur.fetchall()
     user = int(user[0][0])
     user = user + 1
-    #pdb.set_trace()
-    #print("insert into users (usr,pwd,name,email,city,timezone) values (\'"+ str(user) + "\',\'" + pswd + "\',\'" + name +"\',\'" + email + "\',\'" + city + "\',\'" + timezone +"\')")
     cur.execute("insert into users values (:u, :p, :n, :e, :c, :tz)",(user, pswd, name, email, city, timezone))
     print("successfully registered")
     print("Welcome ", name, ", your user ID is ", user, ", don't forget this as it is used to login.")
@@ -144,17 +125,20 @@ def home_page(con, cur, userID, username):
     
     end = False
     skip_print = False
+    print("ID:\t Tweet Text:")
     while True:
         if not skip_print:
             results = cur.fetchmany(numRows = 5)
             for row in results:
-                #print(*row)
-                print(str(row[0]).ljust(3) + " " + str(row[1]) + " " + str(row[2]))
-        skip_print = False # this skip_print is for if you get an error in inputs later and need to continue the loop without advancing.
+                print(str(row[0]).ljust(3) + "\t\t " + str(row[1]))
+                
+        # this skip_print is for if you get an error in inputs later and need to continue the loop without advancing.
+        skip_print = False 
         if len(results) != 5: #this is the end of the list, menu options need to change
             print("There are no more results.")
             choice = input("[Tweet ID#] = view tweet stats, anything else cancels: ")
             end = True
+            
         if not end: choice = blanking_input("[Enter] = see more, [Tweet ID#] = view tweet stats, anything else cancels: ") #regular menu options
         if choice == "" and not end:
             continue
@@ -174,26 +158,12 @@ def home_page(con, cur, userID, username):
             return
         print("Search ended")
         break
-    
-    '''
-    more_tweets = "yes"
-    amount = 0
-    while more_tweets == 'yes':
-        tweet =  cur.fetchone()
-        amount += 1
-        if tweet == None:
-            break
-        print(tweet)
-        if amount % 5 == 0:
-            more_tweets = input("Would you like to receive the next 5 tweets" + 
-                                "? Enter yes or no: ")
-    '''
 
 
 # Provides a menu for the functions of the program
 def functions(con, cur, userID, username):
     os.system(CLEAR_SCREEN)
-    print("Welcome to Twitterpated " + username + "! The functions of Twitterpated are listed below.")
+    print("The functions of Twitterpated are listed below.")
 
     print("1 - Search for Tweets\n2 - Search for Users\n3 - Write a "
           "Tweet\n4 - List Followers\n5 - Manage Lists\n6 - Logout")
@@ -226,7 +196,7 @@ def functions(con, cur, userID, username):
 
 
 # prompts the user to enter a keyword to be searched for in tweets and prints
-#  ou the top 5 recent tweets and gives the user the option to select a tweet
+#  out the top 5 recent tweets and gives the user the option to select a tweet
 #  and get some stats about it or recieve the next 5 tweets.
 def search_tweet(con, cur, userID):
     os.system(CLEAR_SCREEN)
@@ -281,22 +251,20 @@ def search_tweet(con, cur, userID):
     
     query = query + " order by t.tdate desc"
     
-    #@TODO for debug, remove me
-    #print(query)
-    #print(terms_list)
-    
     cur.execute(query, terms_list)
     
     #This Handles 5 at a time showing
     end = False
     skip_print = False
+    print("Tweet ID:\t Name:" + ' '*15 + "Tweet Text:")
     while True:
         if not skip_print:
             results = cur.fetchmany(numRows = 5)
             for row in results:
-                #print(*row)
-                print(str(row[0]).ljust(3) + " " + str(row[1]).ljust(2) + " " + str(row[2]).ljust(2) + " " + str(row[3]).ljust(4) + " " + str(row[4]) + " " + str(row[5]))
-        skip_print = False # this skip_print is for if you get an error in inputs later and need to continue the loop without advancing.
+                  print(str(row[0]).ljust(3) + "\t\t " + str(row[4]) + ' '*(20-len(str(row[4]))) + str(row[5]))
+
+        # this skip_print is for if you get an error in inputs later and need to continue the loop without advancing.
+        skip_print = False 
         if len(results) != 5: #this is the end of the list, menu options need to change
             print("There are no more results.")
             choice = input("[Tweet ID#] = view tweet stats, anything else cancels: ")
@@ -320,41 +288,13 @@ def search_tweet(con, cur, userID):
             return
         print("Search ended")
         break
-    
-    
-    '''
-    for word in keyword:
-        word = word.strip()
-        #Check if we're searching a hashtag.
-        #word[:1] = first character
-        #word[1:] = everything except first character.
-        if word[:1] is '#':
-            cur.execute("select t.text " + "from tweets t, mentions m " + 
-                        "where m.tid = t.tid AND m.term = LOWER('"+ word[1:] +"') " +
-                        "order by t.tdate desc", [])
-        else:
-            cur.execute("select text from " + 
-                        "(select text, row_number() over (order by tdate desc) as row_num " + 
-                        "from tweets where text like ('%' || '"+ word +"' || '%')) where row_num <= 5")
 
-        tweets = cur.fetchall()
-        index = 1
-        for tweet in tweets:
-            print(index, " ", tweet)
-            index += 1
-        if index > 5:
-            more_tweets = input("Would you like to receive the next 5 tweets " + 
-                                "with the matching keyword from before? Enter " + 
-                                "yes or no: ")
-            while (more_tweets == 'yes'):
-                cur.execute("select text from " + 
-                            "(select text, row_number(order by tdate descending) as row_num " + 
-                            "from tweets where text like '%:word%') where row_num <= 5", (word))
-                # @TODO not finished
-    '''
     pause_until_input()
     return
 
+
+# Finds users or cities that match the keyword displays them 5 at a time, prompting a user if they
+#  want to see more or look at a specific user stats and tweets, with the ability to follow them.
 def search_user(con, cur, userID):
     os.system(CLEAR_SCREEN)
     keyword = input("Please enter the name or city of the user you would like to search for: ")
@@ -363,12 +303,16 @@ def search_user(con, cur, userID):
     #This Handles 5 at a time showing
     end = False
     skip_print = False
+    
+    print("User ID:\t Name:" + ' '*15 + "City:")
     while True:
         if not skip_print:
             results = cur.fetchmany(numRows = 5)
             for row in results:
-                print(*row)
-        skip_print = False # this skip_print is for if you get an error in inputs later and need to continue the loop without advancing.
+                print(str(row[0]) + "\t\t " + str(row[1]) + ' '*(20-len(str(row[1]))) + str(row[2]))
+        
+        # this skip_print is for if you get an error in inputs later and need to continue the loop without advancing.
+        skip_print = False 
         if len(results) != 5: #this is the end of the list, menu options need to change
             print("There are no more results.")
             choice = input("[ID#] = view user, anything else cancels: ")
@@ -412,17 +356,14 @@ def write_tweet(con, cur, userID, reply):
     tweetID = cur.fetchall()
     tweetID = int(tweetID[0][0])
     tweetID += 1 
-    
-    print("tweet ID", tweetID)
-    
+   
     query = "insert into tweets values (:t, :wrt, SYSDATE, :txt, :rep)"
     cur.execute(query,{'t':tweetID, 'wrt':userID, 'txt':t_text, 'rep':reply})
     con.commit()
 
-    
-    print ([pos for pos, char in enumerate(t_text) if char == '#'])
+    #gets positions of the '#' in the text.
     index_hash = ([pos for pos, char in enumerate(t_text) if char == '#'])
-    print (index_hash)
+    
     for index in index_hash:
         end_index = index + 1
         while t_text[end_index].isalpha():
@@ -430,6 +371,7 @@ def write_tweet(con, cur, userID, reply):
             if end_index >= len(t_text):
                 break
         
+        #gets the hash_tag from the original tweet based on the index's
         hash_tag = t_text[index+1:end_index]
         
         if len(hash_tag) <= 10 and len(hash_tag) > 0:
@@ -454,12 +396,13 @@ def write_tweet(con, cur, userID, reply):
 
 def list_followers(con, cur, userID):
     os.system(CLEAR_SCREEN)
-    #cur.execute("select u.usr, u.name from users u, follows f WHERE f.flwer = u.usr AND f.flwee = " + str(userID))
     cur.execute(queries.get_users_followers, [userID])
     followers = cur.fetchall()
     if followers != []:
+        print("User ID:\t Name:")
         for row in followers:
-            print(*row)
+            print(str(row[0]) + "\t\t " + str(row[1]))
+            
         Search = True
         while(Search):
             uID = input("Enter a users ID to see more (leave blank to exit): ")
@@ -474,6 +417,7 @@ def list_followers(con, cur, userID):
         print("You do not seem to have anybody following you... maybe write some tweets?")
     return
 
+# Gets more information about a user
 def list_followers_see_more_information(con, cur, userID, uID):
     os.system(CLEAR_SCREEN)
     #Get the data of the selected user.
@@ -485,6 +429,9 @@ def list_followers_see_more_information(con, cur, userID, uID):
     view_user(con, cur, userID, uID)
     return
 
+
+# Creates a menu for lists where a user can choose to view their lists, see lists they are in
+#  create a list, edit a list, or return.
 def manage_lists(con, cur, userID):
     os.system(CLEAR_SCREEN)
     print("Welcome to list management, what would you like to do?.")
@@ -517,6 +464,8 @@ def manage_lists(con, cur, userID):
     pause_until_input()
     return
 
+
+# Views the lists that the user has created
 def view_user_lists(cur, userID):
     os.system(CLEAR_SCREEN)
     cur.execute(queries.get_user_lists, [userID])
@@ -527,7 +476,9 @@ def view_user_lists(cur, userID):
     else:
         print("You do not have any lists")
     pause_until_input()
-            
+    
+    
+# View the list that the user is a part of            
 def view_user_list_membership(cur, userID):
     os.system(CLEAR_SCREEN)
     cur.execute(queries.get_lists_containing_user, [userID])
@@ -539,6 +490,8 @@ def view_user_list_membership(cur, userID):
         print("You are not on any lists")
     pause_until_input()
 
+    
+# create a new list for the user
 def create_list(con, cur, userID):
     os.system(CLEAR_SCREEN)
     lname = get_valid_input(length = 14, prompt = "What would you like to name your new list (Enter nothing to cancel): ")
@@ -553,6 +506,9 @@ def create_list(con, cur, userID):
             print("Sorry, but that list name has been taken")
         pause_until_input()    
         
+        
+# If editing a list was selected, brings up this menu where a user can specify
+#  if they want to add or remove someone from a list or return to previous menu       
 def edit_lists(con, cur, userID):
     os.system(CLEAR_SCREEN)
     print("Welcome to list management, what would you like to do?.")
@@ -571,15 +527,14 @@ def edit_lists(con, cur, userID):
         f_input = input("What would you like to do? ")
         
 
+# adds a user to a list
 def add_to_list(con, cur, userID):
-    
     cur.execute(queries.get_user_lists, [userID])
     lists = cur.fetchall()
     if lists == []:
         print("You do not have any lists. You should go make one!")
         pause_until_input()
         return
-
 
     uID = input("Please Enter the user ID you would like to add: ")
     #Test if the user exists
@@ -589,28 +544,34 @@ def add_to_list(con, cur, userID):
         lname = get_valid_input(length = 12, prompt = "Which list would you like to add this user to? (Enter nothing to cancel): ")
         if lname:
             #Test if the list exists and belongs to user.
-            #TODO: figure out why cur.execute doesn't like lname as an argument.
             cur.execute("select * from lists where lname = '" + lname +  "' AND owner = " + str(userID))
             lists = cur.fetchall()
+            
             if lists != []:
                 #Test if the user is already in the list.
                 cur.execute("select * from includes where lname = '" + lname +  "' AND member = " + str(uID))
                 lists = cur.fetchall()
+                
                 if lists == []:
                     #Update the list with the new user.
                     cur.execute("insert into includes values ('" + lname + "', " + str(uID) + ")")
                     con.commit()
                     print("Successfully added " + uID + " to list " + lname + ".")
+                    
                 else:
                     print("This user is already in this list!!!");
+                    
             else:
                 print("This list doesn't exist. Did you misstype it?")
+                
     else:
         print("This user doesn't exist.")
     
     pause_until_input()
     return
 
+
+# removes a user from a list
 def remove_from_list(con, cur, userID):
     cur.execute(queries.get_user_lists, [userID])
     lists = cur.fetchall()
@@ -624,26 +585,33 @@ def remove_from_list(con, cur, userID):
         #Test if list exists and belongs to user
         cur.execute("select * from lists where lname = '" + lname +  "' AND owner = " + str(userID))
         lists = cur.fetchall()
+        
         if lists != []:
             uID = input("Please Enter the user ID you would like to remove: ")
             #Test if the user exists in the list
             cur.execute("select * from includes where lname = '" + lname +  "' AND member = " + str(uID))
             lists = cur.fetchall()
+            
             if lists != []:
                  #Remove the user from the list
                  cur.execute("DELETE FROM includes where lname = '" + lname + "' AND member = " + str(uID))
                  con.commit()
                  print("Successfully removed " + uID + " from list " + lname + ".")
+                
             else:
-                print("This user is not in this list")                
+                print("This user is not in this list") 
+                
         else:
             print("This list doesn't exist. Did you misstype it?")
+            
     pause_until_input()
     return
 
+
 def pause_until_input():
     input("Press Enter To Continue")
-    
+   
+
 def blanking_input(prompt):
     '''
     Gets input using the specified prompt, then deletes the prompt
@@ -652,6 +620,7 @@ def blanking_input(prompt):
     print("\033[F", end = '') #clear away the input, this returns to previous line
     print(len(prompt)*" ", end = '\r') #write over prompt with spaces, then return to start of line
     return instr
+
 
 def view_user(con, cur, userID, viewID):
     '''
@@ -697,6 +666,7 @@ def view_user(con, cur, userID, viewID):
             choice = blanking_input("[Enter] = more tweets, [f] = follow them, everything else = return: ")
         else:
             choice = blanking_input("[f] = follow them, everything else = return: ")
+            
         if choice == "" and not end:
             continue
         elif choice =="f":
@@ -716,6 +686,7 @@ def view_user(con, cur, userID, viewID):
     pause_until_input()
     return
     
+    
 def view_tweet(con, cur, userID, tid):
     '''
     Shows stats about a selected tweet with tweet id tid. The option to reply to or retweet the tweet that is viewed
@@ -727,11 +698,13 @@ def view_tweet(con, cur, userID, tid):
     print("\n\"" + stats[2].strip() + "\"\n")
     print("This tweet was written by: " + stats[1].strip())
     print("It was written on: " + str(stats[0]).strip())
+    
     #get retweet count
     cur.execute(queries.get_tweet_rtwts, [tid])
     retweets = cur.fetchone()
     retweets = retweets[0]
     print("This tweet has been retweeted this many times: " + str(retweets))
+    
     #get reply count
     cur.execute(queries.get_tweet_reps, [tid])
     replies = cur.fetchone()
@@ -739,6 +712,7 @@ def view_tweet(con, cur, userID, tid):
     print("This tweet has been replied to this many times: " + str(replies))
     print("")
     choice = get_valid_input(prompt = "1 = reply to this tweet, 2 = retweet this tweet, anything else = exit: ")
+    
     if choice == '1':
         print("You will now be taken to a screen where you can write a reply to this tweet")
         pause_until_input()
@@ -751,13 +725,17 @@ def view_tweet(con, cur, userID, tid):
     return
         
     
+# Makes a retweet for the user
 def retweet(con, cur, userID, tid):
     '''
     Retweets the tweet with tweet id tid under the user with user id userID.
     '''
-    cur.execute("select * from retweets r where r.usr = :uID and r.tid = :tid", [userID, tid])
+    query = "select * from retweets r where r.usr = :usrID and r.tid = :twtID"
+    cur.execute(query, {'usrID':userID, 'twtID':tweetID})
     check = cur.fetchone()
-    if cur == []:
+    
+    # check if check is empty, if so make retweet
+    if not check:
         cur.execute(queries.create_retweet, [userID, tid])
         con.commit()
         print("You have reweeted this tweet successfully")
