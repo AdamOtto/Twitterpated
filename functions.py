@@ -726,7 +726,7 @@ def view_tweet(con, cur, userID, tid):
         
     
 # Makes a retweet for the user
-def retweet(con, cur, userID, tid):
+def retweet(con, cur, userID, tweetID):
     '''
     Retweets the tweet with tweet id tid under the user with user id userID.
     '''
@@ -736,7 +736,7 @@ def retweet(con, cur, userID, tid):
     
     # check if check is empty, if so make retweet
     if not check:
-        cur.execute(queries.create_retweet, [userID, tid])
+        cur.execute(queries.create_retweet, [userID, tweetID])
         con.commit()
         print("You have reweeted this tweet successfully")
     else:
