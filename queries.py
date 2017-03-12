@@ -2,12 +2,12 @@
 '''
 Given a user id, return all the tweets and retweets of all the users followers, sorted by date.
 '''
-show_followers_activity = """
+show_followed_users_activity = """
 select t.tid, t.text, t.tdate
 from tweets t, follows f
 where f.flwer = :ID and f.flwee = t.writer
 union
-select t.tid, t.text, t.tdate
+select t.tid, t.text, r.rdate
 from retweets r, follows f, tweets t
 where f.flwer = :ID and f.flwee = r.usr and t.tid = r.tid
 order by tdate desc
