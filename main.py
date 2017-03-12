@@ -1,7 +1,17 @@
 import cx_Oracle
 import pdb #debugger library
 from functions import *
-con = cx_Oracle.connect("crapo","3sidedpolygon","gwynne.cs.ualberta.ca:1521/CRS")
+
+oracle_name = input("Please enter your oracle username: ")
+oracle_pass = input("Please enter your oracle password: ")
+
+try:
+    con = cx_Oracle.connect(oracle_name,oracle_pass,"gwynne.cs.ualberta.ca:1521/CRS")
+except:
+    print("I'm sorry, but we couldn't make a connection to Oracle with those credentials")
+    print("Exiting...")
+    exit()
+
 cur = con.cursor()
 
 #State machine constants
@@ -60,6 +70,8 @@ while state != EXIT:
         if register(cur) == 1:
             con.commit()
             state = LOGIN
+        #registration failed, present menu again
+        state = WELCOME
             
 cur.close()
 con.close()         

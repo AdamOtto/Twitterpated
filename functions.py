@@ -34,6 +34,7 @@ def get_valid_input(length = 20, valids = [], valids_description = None, prompt 
         else:
             break
     if attempt >= tries:
+        print("Sorry you have failed to enter valid input too many times, please try again later")
         return None
     return instr
 
@@ -71,29 +72,42 @@ def login(cur):
 # if register is specified prompts the user for all the information to create a user in the table
 def register(cur):
     clear_screen()
-    name = input("Enter your name (Max 20 chars): ")
-    if len(name) > 20:
-        print("Your name is too long to add to the system, please try again")
+    name = get_valid_input(prompt = "Enter your name (Max 20 chars): ", length = 20, tries = 5)
+    if name is None:
+        print("Registration Failure, returning to menu")
+        pause_until_input()
         return 0
     
-    email = input("Enter your email (Max 15 chars): ")
-    if len(email) > 15:
-        print("Your email is too long to add to the system, please try again.")
+    email = get_valid_input(prompt = "Enter your email (Max 15 chars): ", length = 15, tries = 5)
+    if email is None:
+        print("Registration Failure, returning to menu")
+        pause_until_input()
         return 0
     
-    city = input("Enter the city you live in (Max 12 chars): ")
-    if len(city) > 12:
-        print("Your city name is too long to add to the system, please try again.")
+    city = get_valid_input(prompt = "Enter the city you live in (Max 12 chars): ", length = 12, tries = 5)
+    if city is None:
+        print("Registration Failure, returning to menu")
+        pause_until_input()
         return 0
  
-    timezone = input("Enter your timezone (Float or Int): ")
-    if not isinstance(timezone,(float,int)):
-        print("Timezone needs to be an integer or a float, please try again.")
+    timezone = get_valid_input(prompt = "Enter your timezone (Float or Int): ", length = 10, tries = 5)
+    try:
+        timezone = float(timezone)
+    except:
+        pass
+    if timezone is None:
+        print("Registration Failure, returning to menu")
+        pause_until_input()
+        return 0
+    elif not isinstance(timezone, (float)):
+        print("Timezone must be a number (float or int), Registration failure, returning to menu")
+        pause_until_input()
         return 0
 
-    pswd = input("Enter your password (Max 4 chars): ")
-    if len(pswd) > 4:
-        print("Your password is too long, please try again")
+    pswd = get_valid_input(prompt = "Enter your password (Max 4 chars): ", length = 4, tries = 5)
+    if pswd is None:
+        print("Registration Failure, returning to menu")
+        pause_until_input()
         return 0
 
 
@@ -112,7 +126,6 @@ def register(cur):
 def home_page(con, cur, userID, username):
     clear_screen()
     '''
-    @ TODO is this complete?
     Provides the opening homepage for initial user login. It explains
     some controls, and displays tweets of followed users 5 at a time.
     There is an option to go and use the program functions for more
@@ -125,12 +138,12 @@ def home_page(con, cur, userID, username):
     
     end = False
     skip_print = False
-    print("ID:\t Tweet Text:")
+    print("ID:".ljust(3) + " " + "User:".ljust(20) + " " + "Action:".ljust(7) + " " + "Tweet Text:".ljust(80))
     while True:
         if not skip_print:
             results = cur.fetchmany(numRows = 5)
             for row in results:
-                print(str(row[0]).ljust(3) + "\t\t " + str(row[1]))
+                print(str(row[0]).ljust(3) + " " + row[4].ljust(20) + " " + ("retweet".rjust(7) if row[3]==1 else "tweet".rjust(7)) + " " + str(row[1]))
                 
         # this skip_print is for if you get an error in inputs later and need to continue the loop without advancing.
         skip_print = False 
@@ -415,6 +428,7 @@ def list_followers(con, cur, userID):
                     break
     else:
         print("You do not seem to have anybody following you... maybe write some tweets?")
+    pause_until_input()
     return
 
 # Gets more information about a user
@@ -618,7 +632,7 @@ def blanking_input(prompt):
     '''
     instr = input(prompt)
     print("\033[F", end = '') #clear away the input, this returns to previous line
-    print(len(prompt)*" ", end = '\r') #write over prompt with spaces, then return to start of line
+    print((len(prompt) + len(instr))*" ", end = '\r') #write over prompt with spaces, then return to start of line
     return instr
 
 
@@ -678,13 +692,13 @@ def view_user(con, cur, userID, viewID):
             if check is None or check == []:
                 cur2.execute(queries.create_flw_follower_follows_followee, [userID, viewID])
                 con.commit()
-                print("You have successfully begun following " + name)
+                blanking_input("You have successfully begun following " + name)
             else:
-                print("You already follow " + name + "!") 
+                blanking_input("You already follow " + name + "!") 
         else:
             print("Finished viewing")
-            break
-            
+            return
+    #this is a catch all in case something goes wrong (usually it will return without pausing)        
     pause_until_input()
     return
     
