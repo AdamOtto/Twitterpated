@@ -424,7 +424,7 @@ def list_followers_see_more_information(con, cur, userID, uID):
     cur.execute(queries.get_following_users_data, [uID])
     follower_tweet_count = cur.fetchall()
     print("This user has written " + str(follower_tweet_count[0][0]) + " tweets.")
-    print("This user is following " + str(follower_tweet_count[0][1]) + " other user(s).")
+    print("This user is following " + str(follower_tweet_count[0][1]) + " user(s).")
     print("This user has " + str(follower_tweet_count[0][2]) + " follower(s).\n")
     view_user(con, cur, userID, uID)
     return
