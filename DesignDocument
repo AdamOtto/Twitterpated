@@ -26,7 +26,12 @@ For testing the functions we had used our own methods of testing, normally just 
 
 Group work strategy:
 For the project we had worked on some functions together and on our own. Initially the login and registering part was worked on by everyone as they had time. Later on, we had picked a function and worked on them separately, writing the code and testing to make sure they performed what they needed to do. Whenever a function had repeated a secondary function that could be used again we tried to use previous code to limit the amount of work.
+We coordinated through text, by talking in class, or working on it together. We discussed functions we had done, problems in the code, or what we needed to work on.
 
 Austin:
 Adam: Wrote out an initial set of sql queries that were used in the five tasks. Added functionality to adding and removing from lists, including new sql statments.  Added functionality to task 4: list followers,  allowing user to select a follower and listing their stats.  Wrote the initial draft of the design document. Time spent: 15hrs
-Dylan: Worked on; functions, login, register, home page, write tweet, search tweet. Time spent: 20hrs
+
+Dylan: 
+Created the login function (3hrs),  wrote the base for the register function (2hrs), started initial design for homepage, wrote query to get tweets and retweets from people followed (3hrs),
+created the menu for functions (1hr), created outline for search tweet, not much of it was used in the end (3hrs), created write tweet and tested functionality (4hrs), minor fix to retweets(30mins),
+added in column names where ever a user was prompted to select a user or tweet id (2hrs), made minor edits to design document (2hrs), went through finished code adding comments and deleting debug and unneeded print statements, tested all data (3hrs)
