@@ -23,6 +23,8 @@ user_login = (NO_LOGIN, None, None)
 
 while state != EXIT:
     if state == WELCOME:
+        #Clean the window and welcome the user
+        clear_screen()
         print("Welcome to Twitterpated - the leading tweeting social network")
         print("What would you like to do?")
         print("1 - Login")
