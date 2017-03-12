@@ -4,7 +4,7 @@ from functions import *
 
 uname = input("Please enter oracle username: ")
 pswd = input("Please enter oracle password: ")
-con = cx_Oracle.connect(uname,pswd,"localhost:1525/CRS")
+con = cx_Oracle.connect(uname,pswd,"gwynne.cs.ualberta.ca:1521/CRS")
 cur = con.cursor()
 
 #State machine constants
